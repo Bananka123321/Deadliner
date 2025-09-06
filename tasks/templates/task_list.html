@@ -1,0 +1,21 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Задачи</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'tasks/style.css' %}">
+    <script src="{% static 'tasks/script.js' %}"></script>
+</head>
+<body>
+    <h1>Список задач</h1>
+    <ul>
+        {% for task in tasks %}
+            <li>
+                {{ task.title }} — дедлайн: {{ task.deadline }} 
+                {% if task.is_done %} ✅ {% else %} ⏳ {% endif %}
+            </li>
+        {% endfor %}
+    </ul>
+</body>
+</html>
