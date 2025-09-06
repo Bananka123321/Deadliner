@@ -1,14 +1,13 @@
 from django.contrib import admin
 from django.urls import path, include
-from tasks.views import home, task_list, TaskViewSet
 from rest_framework.routers import DefaultRouter
+from tasks.views import UserTaskViewSet, task_list
 
 router = DefaultRouter()
-router.register(r'tasks', TaskViewSet)
+router.register(r'user-tasks', UserTaskViewSet, basename="user-task")
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', home, name="home"),  # главная страница
-    path('tasks/', task_list, name="task_list"),
-    path('api/', include(router.urls)),
+    path('api/', include(router.urls)),  # API
+    path('', task_list, name='home'),    # Главная страница
 ]
