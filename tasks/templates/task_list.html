@@ -9,7 +9,11 @@
     <script src="{% static 'tasks/script.js' %}"></script>
 </head>
 <body>
-    <h1>Список задач</h1>
+    <h1>Список задач {{ request.user.username }}
+        <form method="post" action="{% url 'logout' %}"> {% csrf_token %}
+            <button type="submit">Выйти</button>
+        </form>
+    </h1>
     <ul>
         {% for task in tasks %}
             <li>
