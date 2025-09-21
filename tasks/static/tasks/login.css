@@ -1,4 +1,3 @@
-/* Базовые стили */
 * {
     box-sizing: border-box;
     margin: 0;
@@ -83,7 +82,6 @@ button:hover {
     text-decoration: underline;
 }
 
-/* Адаптивность */
 @media (max-width: 500px) {
     .login-container {
         padding: 30px 20px;

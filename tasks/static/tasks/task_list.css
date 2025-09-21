@@ -1,5 +1,5 @@
 body {
-    font-family: "Inter", "Segoe UI", sans-serif;
+    font-family: "Inter", sans-serif;
     background: #f9fafb;
     margin: 0;
     padding: 20px;
@@ -11,22 +11,16 @@ body {
     gap: 20px;
     max-width: 1200px;
     margin: auto;
-    align-items: flex-start; /* предотвращаем растягивание правой колонки */
+    align-items: flex-start;
 }
 
-/* Левая колонка с задачами */
-.tasks-column {
-    flex: 3;
-}
-
-/* Правая колонка с участниками */
+.tasks-column { flex: 3; }
 .participants-column {
     flex: 1;
     background: #fff;
     border-radius: 10px;
     box-shadow: 0 2px 6px rgba(0,0,0,0.1);
     padding: 15px;
-    /* height: auto; */ /* по умолчанию, можно явно не задавать */
 }
 
 .toggle-participants {
@@ -40,31 +34,11 @@ body {
     margin-bottom: 10px;
 }
 
-.participants-list {
-    list-style: none;
-    padding: 0;
-    display: none; /* скрыто по умолчанию */
-}
+.participants-list { list-style: none; padding: 0; display: none; }
+.participants-list li { padding: 5px 0; border-bottom: 1px solid #eee; }
 
-.participants-list li {
-    padding: 5px 0;
-    border-bottom: 1px solid #eee;
-}
-
-h1 {
-    text-align: center;
-    margin-bottom: 30px;
-    font-size: 28px;
-    font-weight: 600;
-    color: #1f2937;
-}
-
-.task-list {
-    list-style: none;
-    padding: 0;
-    max-width: 700px;
-    margin: auto;
-}
+h1 { text-align: center; font-size: 28px; margin-bottom: 30px; }
+.task-list { list-style: none; padding: 0; max-width: 700px; margin: auto; }
 
 .task-item {
     background: #ffffff;
@@ -72,49 +46,14 @@ h1 {
     padding: 18px 20px;
     border-radius: 12px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    transition: all 0.3s ease;
 }
+.task-item.done { background: #d4edda; color: #155724; }
+.task-item.expired { background: #f8d7da; color: #721c24; opacity: 0.8; }
 
-.task-item:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-}
-
-.task-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.task-info {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-    font-size: 16px;
-    color: #374151;
-}
-
-.status.done {
-    color: #16a34a;
-}
-
-.status.pending {
-    color: #f59e0b;
-}
-
-.toggle-desc {
-    background: none;
-    border: none;
-    font-size: 18px;
-    cursor: pointer;
-    color: #6b7280;
-    transition: transform 0.3s ease, color 0.2s ease;
-}
-
-.task-item.open .toggle-desc {
-    transform: rotate(180deg);
-    color: #000000; /* синий при открытии */
-}
+.task-header { display: flex; justify-content: space-between; align-items: center; }
+.task-info { display: flex; gap: 10px; align-items: center; font-size: 16px; }
+.toggle-desc { background: none; border: none; font-size: 18px; cursor: pointer; color: #6b7280; }
 
 .task-desc {
     margin-top: 12px;
@@ -124,81 +63,17 @@ h1 {
     color: #4b5563;
     border-top: 1px solid #e5e7eb;
     padding-top: 10px;
-    animation: fadeIn 1s ease;
+    animation: fadeIn 0.3s ease;
 }
 
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(-5px); }
-    to   { opacity: 1; transform: translateY(0); }
-}
+@keyframes fadeIn { from {opacity:0; transform: translateY(-5px);} to {opacity:1; transform: translateY(0);} }
 
-/* Header */
-.header {
-    display: flex;
-    justify-content: flex-end;
-    padding: 15px 20px;
-    background: #fff;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    position: relative;
-}
-
-/* Профильная кнопка */
-.profile-menu {
-    position: relative;
-    display: inline-block;
-}
-
-.profile-button {
-    background: #007bff;
-    color: #fff;
-    border: none;
-    border-radius: 6px;
-    padding: 8px 12px;
-    cursor: pointer;
-    font-weight: 500;
-    transition: background 0.2s ease;
-}
-
-.profile-button:hover {
-    background: #0056b3;
-}
-
-/* Выпадающее меню */
-.dropdown {
-    display: none;
-    position: absolute;
-    right: 0;
-    top: 100%;
-    background: #fff;
-    min-width: 120px;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    border-radius: 6px;
-    margin-top: 5px;
-    z-index: 10;
-    list-style: none;
-    padding: 5px 0;
-}
-
-.dropdown li {
-    padding: 0;
-}
-
-.logout-button {
-    width: 100%;
-    padding: 8px 12px;
-    background: none;
-    border: none;
-    text-align: left;
-    cursor: pointer;
-    font-size: 14px;
-    transition: background 0.2s ease;
-}
-
-.logout-button:hover {
-    background: #f4f6f8;
-}
-
-/* Показать меню при открытии */
-.profile-menu.open .dropdown {
-    display: block;
-}
+.header { display: flex; justify-content: flex-end; padding: 15px 20px; background: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+.profile-menu { position: relative; display: inline-block; }
+.profile-button { background: #007bff; color: #fff; border: none; border-radius: 6px; padding: 8px 12px; cursor: pointer; }
+.profile-button:hover { background: #0056b3; }
+.dropdown { display: none; position: absolute; right: 0; top: 100%; background: #fff; min-width: 120px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); border-radius: 6px; margin-top: 5px; list-style: none; padding: 5px 0; z-index: 10; }
+.dropdown li { padding: 0; }
+.logout-button { width: 100%; padding: 8px 12px; background: none; border: none; text-align: left; cursor: pointer; font-size: 14px; }
+.logout-button:hover { background: #f4f6f8; }
+.profile-menu.open .dropdown { display: block; }

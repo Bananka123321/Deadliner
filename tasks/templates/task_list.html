@@ -22,38 +22,84 @@
             </ul>
         </div>
     </div>
+
     <div class="container">
-        <!-- Левая часть: задачи -->
         <div class="tasks-column">
-            <h1>Список задач {{ request.user.username }}</h1>
+            <h1>Учебные задачи</h1>
             <ul class="task-list">
-                {% for task in tasks %}
-                <li class="task-item">
+                {% for task in study_tasks %}
+                <li class="task-item {% if task.deadline < now %}expired{% elif user_task_dict|get_item:task.id %}done{% endif %}">
                     <div class="task-header">
                         <div class="task-info">
-                            <span>{{ task.title }} — дедлайн: {{ task.deadline }}</span>
-                            {% if user_task_dict|get_item:task.id %}
-                                <span class="status done">✅</span>
+                            <span class="task-title">{{ task.title }}</span>
+                            <span class="task-deadline">(дедлайн: {{ task.deadline }})</span>
+                        </div>
+                        <div class="task-actions">
+                            {% if task.deadline >= now %}
+                            <form method="post" action="{% url 'toggle_task' task.id %}">
+                                {% csrf_token %}
+                                <input type="checkbox" name="done" onchange="this.form.submit()" {% if user_task_dict|get_item:task.id %}checked{% endif %}>
+                            </form>
                             {% else %}
-                                <span class="status pending">⏳</span>
+                            <span class="expired-status">
+                                {% if user_task_dict|get_item:task.id %}
+                                Выполнено вовремя
+                                {% else %}
+                                Просрочено
+                                {% endif %}
+                            </span>
                             {% endif %}
                         </div>
                         <button class="toggle-desc">▼</button>
                     </div>
-                    <div class="task-desc">
-                        {{ task.description|linebreaks }}
-                    </div>
+                    <div class="task-desc">{{ task.description|linebreaks }}</div>
                 </li>
+                {% empty %}
+                <li>Нет учебных задач</li>
+                {% endfor %}
+            </ul>
+
+            <h1>Личные задачи</h1>
+            <ul class="task-list">
+                {% for task in personal_tasks %}
+                <li class="task-item {% if task.deadline < now %}expired{% elif user_task_dict|get_item:task.id %}done{% endif %}">
+                    <div class="task-header">
+                        <div class="task-info">
+                            <span class="task-title">{{ task.title }}</span>
+                            <span class="task-deadline">(дедлайн: {{ task.deadline }})</span>
+                        </div>
+                        <div class="task-actions">
+                            {% if task.deadline >= now %}
+                            <form method="post" action="{% url 'toggle_task' task.id %}">
+                                {% csrf_token %}
+                                <input type="checkbox" name="done" onchange="this.form.submit()" {% if user_task_dict|get_item:task.id %}checked{% endif %}>
+                            </form>
+                            {% else %}
+                            <span class="expired-status">
+                                {% if user_task_dict|get_item:task.id %}
+                                Выполнено вовремя
+                                {% else %}
+                                Просрочено
+                                {% endif %}
+                            </span>
+                            {% endif %}
+                        </div>
+                        <button class="toggle-desc">▼</button>
+                    </div>
+                    <div class="task-desc">{{ task.description|linebreaks }}</div>
+                </li>
+                {% empty %}
+                <li>Нет личных задач</li>
                 {% endfor %}
             </ul>
         </div>
-
-        <!-- Правая часть: участники -->
         <div class="participants-column">
             <button class="toggle-participants">Участники ▼</button>
             <ul class="participants-list">
                 {% for participant in participants %}
-                <li>{{ participant.user.username }}</li>
+                <li>{{ participant.username }}</li>
+                {% empty %}
+                <li>Нет участников</li>
                 {% endfor %}
             </ul>
         </div>
