@@ -4,23 +4,59 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Задачи</title>
-    <link rel="stylesheet" type="text/css" href="{% static 'tasks/style.css' %}">
-    <script src="{% static 'tasks/script.js' %}"></script>
+    <title>Список задач</title>
+    <link rel="stylesheet" href="{% static 'tasks/task_list.css' %}">
+    <script src="{% static 'tasks/task_list.js' %}" defer></script>
 </head>
 <body>
-    <h1>Список задач {{ request.user.username }}
-        <form method="post" action="{% url 'logout' %}"> {% csrf_token %}
-            <button type="submit">Выйти</button>
-        </form>
-    </h1>
-    <ul>
-        {% for task in tasks %}
-            <li>
-                {{ task.title }} — дедлайн: {{ task.deadline }} 
-                {% if user_task_dict|get_item:task.id %} ✅ {% else %} ⏳ {% endif %}
-            </li>
-        {% endfor %}
-    </ul>
+    <div class="header">
+        <div class="profile-menu">
+            <button class="profile-button">{{ request.user.username }} ▼</button>
+            <ul class="dropdown">
+                <li>
+                    <form method="post" action="{% url 'logout' %}">
+                        {% csrf_token %}
+                        <button type="submit" class="logout-button">Выйти</button>
+                    </form>
+                </li>
+            </ul>
+        </div>
+    </div>
+    <div class="container">
+        <!-- Левая часть: задачи -->
+        <div class="tasks-column">
+            <h1>Список задач {{ request.user.username }}</h1>
+            <ul class="task-list">
+                {% for task in tasks %}
+                <li class="task-item">
+                    <div class="task-header">
+                        <div class="task-info">
+                            <span>{{ task.title }} — дедлайн: {{ task.deadline }}</span>
+                            {% if user_task_dict|get_item:task.id %}
+                                <span class="status done">✅</span>
+                            {% else %}
+                                <span class="status pending">⏳</span>
+                            {% endif %}
+                        </div>
+                        <button class="toggle-desc">▼</button>
+                    </div>
+                    <div class="task-desc">
+                        {{ task.description|linebreaks }}
+                    </div>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <!-- Правая часть: участники -->
+        <div class="participants-column">
+            <button class="toggle-participants">Участники ▼</button>
+            <ul class="participants-list">
+                {% for participant in participants %}
+                <li>{{ participant.user.username }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
 </body>
 </html>

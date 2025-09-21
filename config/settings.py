@@ -23,7 +23,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-6ce3dhz(%wn05*qm=vfsf8(7r6l)5h@kx1&ym15!r(=1q-#ycg'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 
 
@@ -126,5 +126,7 @@ LOGIN_REDIRECT_URL = '/'      # после логина вернёт на гла
 LOGOUT_REDIRECT_URL = '/accounts/login/'     # после выхода — тоже на главную
 LOGIN_URL = '/accounts/login/'
 
-ALLOWED_HOSTS = ['10.114.0.166']
-# ALLOWED_HOSTS = ['10.114.1.91','10.114.1.53']
+ALLOWED_HOSTS = ['*']
+
+STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
