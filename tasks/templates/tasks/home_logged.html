@@ -1,0 +1,88 @@
+{% extends "base.html" %} 
+{% load static %}  
+
+{% block head %} 
+<link rel="stylesheet" href="{% static 'css/home_logged.css' %}">
+<script src="{% static 'js/home_logged.js' %}"></script>
+{% endblock %}  
+
+{% block content %} 
+<div class="dashboard">
+  <aside class="sidebar" id="sidebar">
+    <button class="toggle-sidebar">☰</button>
+    <nav class="menu">
+      <ul>
+        <li>Главная</li>
+        <li>Группы</li>
+        <li>Задачи</li>
+        <li>Настройки</li>
+      </ul>
+    </nav>
+  </aside>
+  
+  <main class="main-content">
+    <div class="top-bar">
+      <input type="text" placeholder="Поиск..." class="search-box">
+      <div class="actions">
+        <button class="add-btn">+</button>
+        <div class="account-menu">
+          <button class="account-btn">Аккаунт</button>
+          <div class="account-dropdown">
+            <a href="#">Профиль</a>
+            <form method="post" action="{% url 'logout' %}" style="margin:0;">
+              {% csrf_token %}
+              <button type="submit" class="logout-btn">Выйти</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="tasks-container">
+      {% for group, tasks in group_tasks.items %}
+      <div class="task-card" data-group-id="{{ group.id }}">
+        <h2>{{ group.name }}</h2>
+        {% if tasks %}
+          <ul>
+            {% for task in tasks %}
+              <li>
+                <strong>{{ task.title }}</strong>
+                {% if task.discipline %} — <em>{{ task.discipline }}</em>{% endif %}
+                {% if task.deadline %}<br><small>до {{ task.deadline|date:"d.m.Y H:i" }}</small>{% endif %}
+              </li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <p>Нет задач для этой группы.</p>
+        {% endif %}
+      </div>
+      {% endfor %}
+      
+      {% if personal_tasks %}
+      <div class="task-card" data-personal="true">
+        <h2>Личные задачи</h2>
+        <ul>
+          {% for task in personal_tasks %}
+            <li>
+              <strong>{{ task.title }}</strong>
+              {% if task.deadline %}
+                <br><small>до {{ task.deadline|date:"d.m.Y H:i" }}</small>
+              {% endif %}
+            </li>
+          {% endfor %}
+        </ul>
+      </div>
+      {% endif %}
+    </div>
+  </main>
+</div>
+
+<!-- Модальное окно -->
+<div class="modal" id="taskModal">
+  <div class="modal-content">
+    <span class="close-btn">&times;</span>
+    <h2 id="modal-title">Задачи</h2>
+    <div id="modal-tasks"></div>
+  </div>
+</div>
+{% endblock %}

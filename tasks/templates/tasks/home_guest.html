@@ -1,0 +1,31 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Deadliner | Главная</title>
+    <link rel="stylesheet" href="{% static 'css/main.css' %}">
+</head>
+<body>
+    <div class="container">
+        <h1>Добро пожаловать в <span>Deadliner</span> 🎯</h1>
+        <p>Управляй своими учебными и личными задачами, следи за дедлайнами и прокачивай свой стрик!</p>
+
+        <div class="button-group">
+            <a href="{% url 'login' %}" class="button-login">Войти</a>
+            <a href="{% url 'register' %}" class="button-register">Регистрация</a>
+        </div>
+
+        <div class="developers">
+            <div class="developer-card">
+                <img src="{% static 'images/developers/dev1.jpg' %}" alt="Разработчик 1">
+            </div>
+            <div class="developer-card">
+                <img src="{% static 'images/developers/dev2.jpg' %}" alt="Разработчик 2">
+            </div>
+        </div>
+    </div>
+
+    <script src="{% static 'js/main.js' %}"></script>
+</body>
+</html>
