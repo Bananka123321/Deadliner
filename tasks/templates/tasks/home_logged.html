@@ -1,88 +1,147 @@
-{% extends "base.html" %} 
-{% load static %}  
+{% extends "base.html" %}
+{% load static %}
 
-{% block head %} 
-<link rel="stylesheet" href="{% static 'css/home_logged.css' %}">
-<script src="{% static 'js/home_logged.js' %}"></script>
-{% endblock %}  
+{% block head %}
+  <link rel="stylesheet" href="{% static 'css/home_logged.css' %}">
+  <script defer src="{% static 'js/home_logged.js' %}"></script>
+{% endblock %}
 
-{% block content %} 
+{% block content %}
 <div class="dashboard">
-  <aside class="sidebar" id="sidebar">
-    <button class="toggle-sidebar">☰</button>
+  <!-- Левая панель (фиксированная) -->
+  <aside class="sidebar">
+    <div class="logo">
+      <div class="logo-icon">🚀</div>
+      <span class="logo-text">TaskFlow</span>
+    </div>
+    
     <nav class="menu">
       <ul>
-        <li>Главная</li>
-        <li>Группы</li>
-        <li>Задачи</li>
-        <li>Настройки</li>
+        <li class="active">
+          <span>🏠</span> Дашборд
+        </li>
+        <li>
+          <span>👥</span> Группы
+        </li>
+        <li>
+          <span>📝</span> Задачи
+        </li>
+        <li>
+          <span>⚙️</span> Настройки
+        </li>
       </ul>
     </nav>
-  </aside>
-  
-  <main class="main-content">
-    <div class="top-bar">
-      <input type="text" placeholder="Поиск..." class="search-box">
-      <div class="actions">
-        <button class="add-btn">+</button>
-        <div class="account-menu">
-          <button class="account-btn">Аккаунт</button>
-          <div class="account-dropdown">
-            <a href="#">Профиль</a>
-            <form method="post" action="{% url 'logout' %}" style="margin:0;">
-              {% csrf_token %}
-              <button type="submit" class="logout-btn">Выйти</button>
-            </form>
-          </div>
+    
+    <div class="sidebar-footer">
+      <div class="user-info dropdown">
+        <div class="user-avatar">{{ user.username|slice:":1"|upper }}</div>
+        <span class="username">{{ user.username }}</span>
+        <div class="dropdown-menu">
+          <a href="{% url 'logout' %}" class="logout-btn">Выйти</a>
         </div>
       </div>
     </div>
-    
-    <div class="tasks-container">
-      {% for group, tasks in group_tasks.items %}
-      <div class="task-card" data-group-id="{{ group.id }}">
-        <h2>{{ group.name }}</h2>
-        {% if tasks %}
-          <ul>
+  </aside>
+
+  <!-- Основной контент -->
+  <main class="main-content">
+    <header class="page-header">
+      <h1>Добро пожаловать, <span class="highlight">{{ user.username }}</span></h1>
+      <p class="subtitle">Ваш персональный менеджер задач</p>
+    </header>
+
+    <!-- Статистика -->
+    <div class="stats-grid">
+      <div class="stat-card neon-success">
+        <div class="stat-icon">✔</div>
+        <div class="stat-details">
+          <span class="stat-label">Всего выполнено</span>
+          <span class="stat-value" id="total-done">{{ total_done }}</span>
+        </div>
+      </div>
+
+      <div class="stat-card neon-streak">
+        <div class="stat-icon">🔥</div>
+        <div class="stat-details">
+          <span class="stat-label">Текущий стрик</span>
+          <span class="stat-value" id="current-streak">{{ current_streak }}</span>
+        </div>
+      </div>
+
+      <div class="stat-card neon-warning">
+        <div class="stat-icon">⏰</div>
+        <div class="stat-details">
+          <span class="stat-label">Просрочено</span>
+          <span class="stat-value" id="expired">{{ expired }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Задачи -->
+    <div class="tasks-section">
+      <div class="section-header">
+        <h2>Ваши задачи</h2>
+        <div class="actions">
+          <button class="btn-primary">➕ Добавить задачу</button>
+        </div>
+      </div>
+
+      <div class="tasks-grid">
+        {% for group, tasks in group_tasks.items %}
+        <div class="task-group" data-group-id="{{ group.id }}">
+          <div class="group-header">
+            <h3>{{ group.name }}</h3>
+            <span class="task-count">{{ tasks|length }}</span>
+          </div>
+          <div class="tasks-list">
             {% for task in tasks %}
-              <li>
-                <strong>{{ task.title }}</strong>
-                {% if task.discipline %} — <em>{{ task.discipline }}</em>{% endif %}
-                {% if task.deadline %}<br><small>до {{ task.deadline|date:"d.m.Y H:i" }}</small>{% endif %}
-              </li>
+            <div class="task-item">
+              <div class="task-icon">📌</div>
+              <div class="task-content">
+                <div class="task-title">{{ task.title }}</div>
+                <div class="task-meta">
+                  {% if task.discipline %}<span class="discipline">{{ task.discipline }}</span>{% endif %}
+                  {% if task.deadline %}<span class="deadline">до {{ task.deadline|date:"d.m.Y" }}</span>{% endif %}
+                </div>
+              </div>
+            </div>
             {% endfor %}
-          </ul>
-        {% else %}
-          <p>Нет задач для этой группы.</p>
+          </div>
+        </div>
+        {% endfor %}
+
+        {% if personal_tasks %}
+        <div class="task-group personal">
+          <div class="group-header">
+            <h3>Личные задачи</h3>
+            <span class="task-count">{{ personal_tasks|length }}</span>
+          </div>
+          <div class="tasks-list">
+            {% for task in personal_tasks %}
+            <div class="task-item">
+              <div class="task-icon">💫</div>
+              <div class="task-content">
+                <div class="task-title">{{ task.title }}</div>
+                <div class="task-meta">
+                  {% if task.deadline %}<span class="deadline">до {{ task.deadline|date:"d.m.Y" }}</span>{% endif %}
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
         {% endif %}
       </div>
-      {% endfor %}
-      
-      {% if personal_tasks %}
-      <div class="task-card" data-personal="true">
-        <h2>Личные задачи</h2>
-        <ul>
-          {% for task in personal_tasks %}
-            <li>
-              <strong>{{ task.title }}</strong>
-              {% if task.deadline %}
-                <br><small>до {{ task.deadline|date:"d.m.Y H:i" }}</small>
-              {% endif %}
-            </li>
-          {% endfor %}
-        </ul>
-      </div>
-      {% endif %}
     </div>
   </main>
 </div>
 
 <!-- Модальное окно -->
-<div class="modal" id="taskModal">
-  <div class="modal-content">
-    <span class="close-btn">&times;</span>
-    <h2 id="modal-title">Задачи</h2>
-    <div id="modal-tasks"></div>
+<div class="modal-overlay" id="taskModal">
+  <div class="modal-content glassmorphism">
+    <button class="modal-close">&times;</button>
+    <h2 id="modal-title">Детали группы</h2>
+    <div id="modal-tasks" class="modal-tasks-list"></div>
   </div>
 </div>
 {% endblock %}

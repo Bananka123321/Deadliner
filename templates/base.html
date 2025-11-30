@@ -9,8 +9,21 @@
     {% block head %}{% endblock %}
 </head>
 <body>
-    {% block content %}{% endblock %}
-    <script src="{% static 'js/main.js' %}"></script>
-    {% block scripts %}{% endblock %}
+{% block content %}{% endblock %}
+
+<!-- Модальное окно -->
+<div id="modal-bg" class="fixed inset-0 bg-black/40 backdrop-blur-sm hidden items-center justify-center z-50">
+    <div id="modal-window" class="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto relative">
+        <div class="sticky top-0 bg-gradient-to-r from-emerald-600 to-cyan-600 text-white p-5 flex justify-between items-center shadow-md">
+            <h2 id="modal-title" class="text-xl font-bold"></h2>
+        </div>
+        <div id="modal-content" class="p-6"></div>
+    </div>
+</div>
+
+<script src="{% static 'js/main.js' %}"></script>  
+<script src="{% static 'js/groups.js' %}"></script>
+
+{% block scripts %}{% endblock %}
 </body>
 </html>

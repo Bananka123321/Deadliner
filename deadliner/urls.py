@@ -18,6 +18,7 @@ from django.contrib import admin
 from django.urls import path, include
 from tasks import views as task_views
 from django.contrib.auth.views import LogoutView
+from tasks.views import toggle_task, group_tasks
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -25,4 +26,7 @@ urlpatterns = [
     path("dashboard/", task_views.home_logged, name="home_logged"),
     path("users/", include("users.urls")),
     path('logout/', LogoutView.as_view(next_page='home'), name='logout'),
+    path("groups/<int:group_id>/tasks/", group_tasks),
+    path("tasks/<int:task_id>/toggle/", toggle_task),
+
 ]
