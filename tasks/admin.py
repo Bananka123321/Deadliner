@@ -11,8 +11,7 @@ class GroupRoleInline(admin.TabularInline):
 
 @admin.register(ClassGroup)
 class ClassGroupAdmin(admin.ModelAdmin):
-    list_display = ("name", "is_personal", "created_at")
-    list_filter = ("is_personal",)
+    list_display = ("name", "created_at")
     search_fields = ("name",)
     filter_horizontal = ("members",)
     inlines = [GroupRoleInline]
@@ -35,14 +34,14 @@ class UserTaskAdmin(admin.ModelAdmin):
             if not usertask.is_done:
                 usertask.is_done = True
                 usertask.completed_at = timezone.now()
-                # Обновляем статус
+                
                 if usertask.completed_at <= usertask.task.deadline:
                     usertask.status = usertask.Status.DONE_ON_TIME
                 else:
                     usertask.status = usertask.Status.DONE_LATE
                 usertask.save()
                 
-                # Обновляем статистику пользователя
+                
                 stats, created = UserStats.objects.get_or_create(user=usertask.user)
                 stats.update_stats()
                 updated_count += 1
@@ -51,6 +50,6 @@ class UserTaskAdmin(admin.ModelAdmin):
 
 @admin.register(UserStats)
 class UserStatsAdmin(admin.ModelAdmin):
-    list_display = ("user", "streak", "total_completed", "last_completed_date")
+    list_display = ("user", "streak", "last_completed_date")
 
 admin.site.register(GroupRole)

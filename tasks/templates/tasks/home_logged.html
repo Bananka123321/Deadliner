@@ -4,11 +4,11 @@
 {% block head %}
   <link rel="stylesheet" href="{% static 'css/home_logged.css' %}">
   <script defer src="{% static 'js/home_logged.js' %}"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 {% endblock %}
 
 {% block content %}
 <div class="dashboard">
-  <!-- Левая панель (фиксированная) -->
   <aside class="sidebar">
     <div class="logo">
       <div class="logo-icon">🚀</div>
@@ -17,40 +17,29 @@
     
     <nav class="menu">
       <ul>
-        <li class="active">
-          <span>🏠</span> Дашборд
-        </li>
-        <li>
-          <span>👥</span> Группы
-        </li>
-        <li>
-          <span>📝</span> Задачи
-        </li>
-        <li>
-          <span>⚙️</span> Настройки
-        </li>
+        <li class="active"><i class="fas fa-users"></i> <span>Группы</span></li>
+        <li><i class="fas fa-tasks"></i> <span>Задачи</span></li>
+        <li><i class="fas fa-calendar-alt"></i> <span>Календарь</span></li>
       </ul>
     </nav>
-    
     <div class="sidebar-footer">
       <div class="user-info dropdown">
         <div class="user-avatar">{{ user.username|slice:":1"|upper }}</div>
         <span class="username">{{ user.username }}</span>
         <div class="dropdown-menu">
-          <a href="{% url 'logout' %}" class="logout-btn">Выйти</a>
+          <form action="{% url 'logout' %}" method="post">
+            {% csrf_token %}
+            <button type="submit" class="logout-btn">Выйти</button>
+          </form>
         </div>
       </div>
     </div>
   </aside>
-
-  <!-- Основной контент -->
   <main class="main-content">
     <header class="page-header">
       <h1>Добро пожаловать, <span class="highlight">{{ user.username }}</span></h1>
       <p class="subtitle">Ваш персональный менеджер задач</p>
     </header>
-
-    <!-- Статистика -->
     <div class="stats-grid">
       <div class="stat-card neon-success">
         <div class="stat-icon">✔</div>
@@ -76,72 +65,40 @@
         </div>
       </div>
     </div>
-
-    <!-- Задачи -->
     <div class="tasks-section">
       <div class="section-header">
-        <h2>Ваши задачи</h2>
+        <h2>Ваши группы</h2>
         <div class="actions">
-          <button class="btn-primary">➕ Добавить задачу</button>
+          <button class="btn-primary"><i class="fas fa-plus"></i> Новая задача</button>
         </div>
       </div>
 
       <div class="tasks-grid">
         {% for group, tasks in group_tasks.items %}
-        <div class="task-group" data-group-id="{{ group.id }}">
-          <div class="group-header">
-            <h3>{{ group.name }}</h3>
-            <span class="task-count">{{ tasks|length }}</span>
-          </div>
-          <div class="tasks-list">
-            {% for task in tasks %}
-            <div class="task-item">
-              <div class="task-icon">📌</div>
-              <div class="task-content">
-                <div class="task-title">{{ task.title }}</div>
-                <div class="task-meta">
-                  {% if task.discipline %}<span class="discipline">{{ task.discipline }}</span>{% endif %}
-                  {% if task.deadline %}<span class="deadline">до {{ task.deadline|date:"d.m.Y" }}</span>{% endif %}
+        <a href="{% url 'group_detail' group.id %}">
+          <div class="task-group" data-group-id="{{ group.id }}">
+            <div class="group-header">
+              <h3>{{ group.name }}</h3>
+              <span class="task-count">{{ tasks|length }}</span>
+            </div>
+            <div class="tasks-list">
+              {% for task in tasks %}
+              <div class="task-item">
+                <div class="task-content">
+                  <div class="task-title">{{ task.title }}</div>
+                  <div class="task-meta">
+                    {% if task.discipline %}<span class="discipline">{{ task.discipline }}</span>{% endif %}
+                    {% if task.deadline %}<span class="deadline">до {{ task.deadline|date:"d.m.Y" }}</span>{% endif %}
+                  </div>
                 </div>
               </div>
+              {% endfor %}
             </div>
-            {% endfor %}
           </div>
-        </div>
+        </a>
         {% endfor %}
-
-        {% if personal_tasks %}
-        <div class="task-group personal">
-          <div class="group-header">
-            <h3>Личные задачи</h3>
-            <span class="task-count">{{ personal_tasks|length }}</span>
-          </div>
-          <div class="tasks-list">
-            {% for task in personal_tasks %}
-            <div class="task-item">
-              <div class="task-icon">💫</div>
-              <div class="task-content">
-                <div class="task-title">{{ task.title }}</div>
-                <div class="task-meta">
-                  {% if task.deadline %}<span class="deadline">до {{ task.deadline|date:"d.m.Y" }}</span>{% endif %}
-                </div>
-              </div>
-            </div>
-            {% endfor %}
-          </div>
-        </div>
-        {% endif %}
-      </div>
+      </div> 
     </div>
   </main>
-</div>
-
-<!-- Модальное окно -->
-<div class="modal-overlay" id="taskModal">
-  <div class="modal-content glassmorphism">
-    <button class="modal-close">&times;</button>
-    <h2 id="modal-title">Детали группы</h2>
-    <div id="modal-tasks" class="modal-tasks-list"></div>
-  </div>
 </div>
 {% endblock %}

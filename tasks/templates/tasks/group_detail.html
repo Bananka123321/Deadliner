@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block head %}
+  <link rel="stylesheet" href="{% static 'css/group_detail.css' %}">
+  <script defer src="{% static 'js/group_detail.js' %}"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+{% endblock %}
+
+{% block content %}
+<div class="dashboard">
+    <aside class="sidebar">
+        <div class="logo">
+            <div class="logo-icon">🚀</div>
+            <span class="logo-text">TaskFlow</span>
+        </div>
+        <nav class="menu">
+            <ul>
+                <li class="active"><i class="fas fa-users"></i> <span>Группы</span></li>
+                <li><i class="fas fa-tasks"></i> <span>Задачи</span></li>
+                <li><i class="fas fa-calendar-alt"></i> <span>Календарь</span></li>
+            </ul>
+        </nav>
+        <div class="sidebar-footer">
+            <div class="user-info dropdown">
+                <div class="user-avatar">{{ user.username|slice:":1"|upper }}</div>
+                <span class="username">{{ user.username }}</span>
+                <div class="dropdown-menu">
+                    <form action="{% url 'logout' %}" method="post">
+                        {% csrf_token %}
+                        <button type="submit" class="logout-btn">Выйти</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </aside>
+    <main class="main-content">
+        <div class="page-header">
+            <h1>{{ group.name }}</h1>
+        </div>
+        <div class="stats-grid">
+            <div class="stat-card neon-success">
+                <div class="stat-icon"><i class="fas fa-user-check"></i></div>
+                <div class="stat-details">
+                    <span class="stat-label">Участники</span>
+                    <span class="stat-value">{{ group.members.count }}</span>
+                </div>
+            </div>
+            <div class="stat-card neon-streak">
+                <div class="stat-icon"><i class="fas fa-tasks"></i></div>
+                <div class="stat-details">
+                    <span class="stat-label">Активные задачи</span>
+                    <span class="stat-value">7</span>
+                </div>
+            </div>
+            <div class="stat-card neon-warning" id="leaders-card" style="cursor:pointer;">
+                <div class="stat-icon"><i class="fas fa-award"></i></div>
+                <div class="stat-details">
+                    <span class="stat-label">Лидер месяца</span>
+                    <span class="stat-value">
+                        {% if leaderboard %}
+                            {{ leaderboard.0.user.username }}
+                        {% else %}
+                            —
+                        {% endif %}
+                    </span>
+                </div>
+            </div>
+        </div>
+        <div class="tasks-section">
+            <div class="section-header">
+                <h2>Активные задачи</h2>
+                <button class="btn-primary"><i class="fas fa-plus"></i> Новая задача</button>
+            </div>
+            <div class="tasks-grid">
+                <div class="task-group personal">
+                    <div class="group-header">
+                        <h3>Нейросети</h3>
+                        <span class="task-count">8/18</span>
+                    </div>
+                    <div class="tasks-list">
+                        <div class="task-item">
+                            <div class="task-icon">🤖</div>
+                            <div>
+                                <div class="task-title">Лабораторная: CNN</div>
+                                <div class="task-meta">
+                                    <span class="discipline">Нейросети</span>
+                                    <span class="deadline">До 10.12</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="task-item">
+                            <div class="task-icon">🚀</div>
+                            <div>
+                                <div class="task-title">Проект: SpaceX</div>
+                                <div class="task-meta">
+                                    <span class="discipline">Физика</span>
+                                    <span class="deadline">До 15.12</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="task-group">
+                    <div class="group-header">
+                        <h3>Идеи стартапов</h3>
+                        <span class="task-count">12/18</span>
+                    </div>
+                    <div class="tasks-list">
+                        <div class="task-item">
+                            <div class="task-icon">💡</div>
+                            <div>
+                                <div class="task-title">Придумать edtech-стартап</div>
+                                <div class="task-meta">
+                                    <span class="discipline">Бизнес</span>
+                                    <span class="deadline">До 06.12</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    <div class="modal-overlay" id="leaders-modal">
+        <div class="modal-content">
+            <button class="modal-close" id="leaders-close">&times;</button>
+            <h2>Таблица участников</h2>
+
+            <table style="width:100%; border-collapse: collapse; margin-top: 1rem;">
+                <thead>
+                    <tr style="border-bottom:1px solid rgba(255,255,255,0.15);">
+                        <th style="text-align:left; padding: 8px 0;">Участник</th>
+                        <th style="text-align:right; padding: 8px 0;">Очки</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for s in leaderboard %}
+                    <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
+                        <td style="padding: 8px 0;">{{ s.user.username }}</td>
+                        <td style="text-align:right; padding: 8px 0; font-weight:700;">{{ s.total_points }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="2" style="padding: 10px 0;">Нет участников</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    </main>
+</div>
+{% endblock %}

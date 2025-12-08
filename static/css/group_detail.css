@@ -1,32 +1,26 @@
 :root {
- 
   --primary: #6366f1;
   --secondary: #8b5cf6;
   --success: #10b981;
   --warning: #f59e0b;
   --danger: #ef4444;
-  
- 
+
   --neon-success: 0 0 15px rgba(16, 185, 129, 0.7);
   --neon-streak: 0 0 15px rgba(245, 158, 11, 0.7);
   --neon-warning: 0 0 15px rgba(239, 68, 68, 0.7);
-  
- 
+
   --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
   --glass-bg: rgba(30, 41, 59, 0.6);
   --glass-border: rgba(255, 255, 255, 0.1);
-  
- 
+
   --shadow-sm: 0 4px 6px rgba(0, 0, 0, 0.1);
   --shadow-md: 0 10px 25px rgba(0, 0, 0, 0.2);
   --shadow-lg: 0 20px 40px rgba(0, 0, 0, 0.3);
-  
- 
+
   --radius-sm: 8px;
   --radius-md: 16px;
   --radius-lg: 24px;
-  
- 
+
   --transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
 }
 
@@ -45,13 +39,11 @@ body {
   padding: 0;
 }
 
-
 .dashboard {
   display: flex;
   min-height: 100vh;
   width: 100vw;
 }
-
 
 .sidebar {
   width: 280px;
@@ -187,7 +179,6 @@ body {
   font-weight: bold;
   color: white;
 }
-
 
 .main-content {
   flex: 1;

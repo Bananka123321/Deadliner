@@ -7,7 +7,6 @@ class ClassGroup(models.Model):
     name = models.CharField(max_length=10)
     members = models.ManyToManyField(User, related_name="class_groups")
     created_at = models.DateTimeField(auto_now_add=True)
-    is_personal = models.BooleanField(default=False)
 
     def clean(self):
             if len(self.name) > 10:
@@ -36,6 +35,7 @@ class Task(models.Model):
     group = models.ForeignKey(ClassGroup, on_delete=models.CASCADE)
     discipline = models.CharField(max_length=36, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    points = models.PositiveIntegerField(default=0)
 
     def clean(self):
             if len(self.title) > 35:
@@ -77,38 +77,59 @@ class UserTask(models.Model):
         return f"{self.user.username} — {self.task.title}"
     
     def save(self, *args, **kwargs):
-            if self.is_done and not self.completed_at:
-                self.completed_at = timezone.now()
+        was_done_before = False
+        if self.pk:
+            old = UserTask.objects.get(pk=self.pk)
+            was_done_before = old.is_done
+
+        if self.is_done and not was_done_before:
+            self.completed_at = timezone.now()
+            
+            if hasattr(self.user, 'stats'):
+                self.user.stats.add_points(self.task.points)
+
+            self.user.stats.update_streak()
+
+            if self.completed_at <= self.task.deadline:
+                self.status = self.Status.DONE_ON_TIME
+            else:
+                self.status = self.Status.DONE_LATE
+
+        elif not self.is_done and was_done_before:
+            self.completed_at = None
+            self.status = self.Status.ACTIVE
+            
+            if hasattr(self.user, 'stats'):
+                self.user.stats.total_points = max(0, self.user.stats.total_points - self.task.points)
+                self.user.stats.save()
                 
-                # Определяем статус выполнения
-                if self.completed_at <= self.task.deadline:
-                    self.status = self.Status.DONE_ON_TIME
-                else:
-                    self.status = self.Status.DONE_LATE
-            elif not self.is_done:
-                self.completed_at = None
-                self.status = self.Status.ACTIVE
-                
-            super().save(*args, **kwargs)
+        super().save(*args, **kwargs)
+
             
 class UserStats(models.Model):
-    total_completed = models.PositiveIntegerField(default=0)
     streak = models.PositiveIntegerField(default=0)
+    total_points = models.PositiveIntegerField(default=0)
     last_completed_date = models.DateField(null=True, blank=True)
-
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="stats")
-    
-    def update_stats(self):
-        today = timezone.now().date()
 
+
+    def update_streak(self):
+        today = timezone.now().date()
         if self.last_completed_date == today - timezone.timedelta(days=1):
             self.streak += 1
-        elif self.last_completed_date != today:
+        elif self.last_completed_date == today:
+            pass
+        else:
             self.streak = 1
-
         self.last_completed_date = today
-        self.total_completed += 1
         self.save()
 
-    def __str__(self):
-        return f"{self.user.username} — 🔥 {self.streak} дней, всего: {self.total_completed}"
+    def total_done(self):
+        return UserTask.objects.filter(user=self.user, status__in=[UserTask.Status.DONE_ON_TIME, UserTask.Status.DONE_LATE]).count()
+
+    def total_expired(self):
+        return UserTask.objects.filter(user=self.user, status=UserTask.Status.EXPIRED).count()
+
+    def add_points(self, points):
+        self.total_points += points
+        self.save()

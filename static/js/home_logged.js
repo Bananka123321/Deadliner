@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-  // Эффект появления элементов при скролле
+  
   const observerOptions = {
     threshold: 0.1,
     rootMargin: '0px 0px -50px 0px'
@@ -15,7 +15,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }, observerOptions);
 
-  // Анимация карточек статистики и групп задач
+  
   document.querySelectorAll('.stat-card, .task-group').forEach(el => {
     el.style.opacity = 0;
     el.style.transform = 'translateY(20px)';
@@ -23,7 +23,7 @@ document.addEventListener('DOMContentLoaded', () => {
     observer.observe(el);
   });
 
-  // Модальное окно
+  
   const modal = document.getElementById('taskModal');
   const modalTitle = document.getElementById('modal-title');
   const modalTasks = document.getElementById('modal-tasks');
@@ -31,27 +31,31 @@ document.addEventListener('DOMContentLoaded', () => {
 
   document.querySelectorAll('.task-group').forEach(group => {
     group.addEventListener('click', (e) => {
-      // Игнорируем клик на кнопки внутри группы (если будут)
-      if(e.target.tagName.toLowerCase() === 'button') return;
+    if(e.target.tagName.toLowerCase() === 'button') return;
 
-      const groupName = group.querySelector('.group-header h3').textContent;
-      const tasks = group.querySelectorAll('.task-item');
+    const groupName = group.querySelector('.group-header h3').textContent;
+    const tasks = group.querySelectorAll('.task-item');
 
-      modalTitle.textContent = `Задачи: ${groupName}`;
-      modalTasks.innerHTML = '';
+    modalTitle.textContent = `Задачи: ${groupName}`;
+    modalTasks.innerHTML = '';
 
-      tasks.forEach(task => {
-        const taskClone = task.cloneNode(true);
-        taskClone.querySelector('.task-icon').style.fontSize = '1.4rem';
-        modalTasks.appendChild(taskClone);
-      });
+    tasks.forEach(task => {
+      const taskClone = task.cloneNode(true);
+      const icon = taskClone.querySelector('.task-icon');
 
-      modal.classList.add('show');
-      document.body.style.overflow = 'hidden';
+      if(icon) {
+        icon.style.fontSize = '1.4rem';
+      }
+
+      modalTasks.appendChild(taskClone);
     });
-  });
 
-  // Закрытие модального окна
+    modal.classList.add('show');
+    document.body.style.overflow = 'hidden';
+    });
+    });
+
+  
   function closeModal() {
     modal.classList.remove('show');
     document.body.style.overflow = 'auto';
@@ -62,7 +66,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (e.target === modal) closeModal();
   });
 
-  // Неоновая анимация статистики
+  
   function animateNeonCards() {
     document.querySelectorAll('.stat-card').forEach((card, index) => {
       setTimeout(() => {
