@@ -1,11 +1,12 @@
 from rest_framework import viewsets
-from .models import Task, UserTask, UserStats, ClassGroup
+from .models import Task, UserTask, UserStats, ClassGroup, GroupRole
 from .serializers import TaskSerializer, UserTaskSerializer, UserStatsSerializer
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from .forms import TaskForm
+from django.contrib import messages
 
 def home(request):
     if request.user.is_authenticated:
@@ -151,4 +152,40 @@ def create_task(request):
             form.save()
             return redirect('home_logged')
 
+    return redirect('home_logged')
+
+@login_required
+def create_group(request):
+    if request.method == 'POST':
+        group_name = request.POST.get('name', '').strip()
+        description = request.POST.get('description', '').strip()
+        color = request.POST.get('color', 'blue')
+        
+        if not group_name:
+            messages.error(request, 'Название группы обязательно для заполнения')
+            return redirect('home_logged')
+            
+        if len(group_name) > 10:
+            messages.error(request, 'Название группы не должно превышать 10 символов')
+            return redirect('home_logged')
+        
+        try:
+            group = ClassGroup.objects.create(name=group_name)
+            
+            GroupRole.objects.create(
+                user=request.user,
+                group=group,
+                role='admin'
+            )
+            
+            group.members.add(request.user)
+            group.save()
+            
+            messages.success(request, f'Группа "{group_name}" успешно создана!')
+            return redirect('home_logged')
+            
+        except Exception as e:
+            messages.error(request, f'Ошибка при создании группы: {str(e)}')
+            return redirect('home_logged')
+    
     return redirect('home_logged')
