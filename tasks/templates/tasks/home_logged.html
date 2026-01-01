@@ -69,36 +69,115 @@
       <div class="section-header">
         <h2>Ваши группы</h2>
         <div class="actions">
-          <button class="btn-primary"><i class="fas fa-plus"></i> Новая задача</button>
+          <button class="btn-primary" id="openTaskModal"><i class="fas fa-plus"></i> Новая задача</button>
         </div>
       </div>
 
       <div class="tasks-grid">
         {% for group, tasks in group_tasks.items %}
-        <a href="{% url 'group_detail' group.id %}">
-          <div class="task-group" data-group-id="{{ group.id }}">
-            <div class="group-header">
-              <h3>{{ group.name }}</h3>
-              <span class="task-count">{{ tasks|length }}</span>
-            </div>
-            <div class="tasks-list">
-              {% for task in tasks %}
-              <div class="task-item">
-                <div class="task-content">
-                  <div class="task-title">{{ task.title }}</div>
-                  <div class="task-meta">
-                    {% if task.discipline %}<span class="discipline">{{ task.discipline }}</span>{% endif %}
-                    {% if task.deadline %}<span class="deadline">до {{ task.deadline|date:"d.m.Y" }}</span>{% endif %}
-                  </div>
+        <div class="task-group clickable" data-href="{% url 'group_detail' group.id %}" data-group-id="{{ group.id }}">
+          <div class="group-header">
+            <h3>{{ group.name }}</h3>
+            <span class="task-count">{{ tasks|length }}</span>
+          </div>
+
+          <div class="tasks-list">
+            {% for task in tasks %}
+            <div class="task-item">
+              <div class="task-content">
+                <div class="task-title">{{ task.title }}</div>
+                <div class="task-meta">
+                  {% if task.discipline %}
+                    <span class="discipline">{{ task.discipline }}</span>
+                  {% endif %}
+                  {% if task.deadline %}
+                    <span class="deadline">
+                      до {{ task.deadline|date:"d.m.Y" }}
+                    </span>
+                  {% endif %}
                 </div>
               </div>
-              {% endfor %}
             </div>
+            {% endfor %}
           </div>
-        </a>
+        </div>
         {% endfor %}
-      </div> 
+      </div>
     </div>
   </main>
 </div>
+
+<div class="modal-overlay task-modal" id="taskModal">
+  <div class="modal-content task-modal">
+    <div class="modal-header">
+      <h3><i class="fas fa-tasks"></i> Новая задача</h3>
+      <button class="modal-close" id="closeTaskModal">&times;</button>
+    </div>
+
+    <form method="post" action="{% url 'create_task' %}" id="taskForm">
+      {% csrf_token %}
+
+      <div class="form-group">
+        <label for="{{ task_form.title.id_for_label }}"><i class="fas fa-heading"></i> Название</label>
+        {{ task_form.title }}
+        {% if task_form.title.errors %}
+          <div class="errorlist">{{ task_form.title.errors }}</div>
+        {% endif %}
+        <div class="help-text">Краткое описание основной цели задачи</div>
+      </div>
+
+      <div class="form-group">
+        <label for="{{ task_form.description.id_for_label }}"><i class="fas fa-align-left"></i> Описание</label>
+        {{ task_form.description }}
+        {% if task_form.description.errors %}
+          <div class="errorlist">{{ task_form.description.errors }}</div>
+        {% endif %}
+      </div>
+
+      <div class="form-group">
+        <label for="{{ task_form.discipline.id_for_label }}"><i class="fas fa-book"></i> Дисциплина</label>
+        {{ task_form.discipline }}
+        {% if task_form.discipline.errors %}
+          <div class="errorlist">{{ task_form.discipline.errors }}</div>
+        {% endif %}
+      </div>
+
+      <div class="form-group">
+        <label for="{{ task_form.deadline.id_for_label }}"><i class="fas fa-calendar-check"></i> Срок выполнения</label>
+        {{ task_form.deadline }}
+        {% if task_form.deadline.errors %}
+          <div class="errorlist">{{ task_form.deadline.errors }}</div>
+        {% endif %}
+        <div class="help-text">Укажите дату в формате ГГГГ-ММ-ДД</div>
+      </div>
+
+      <div class="form-group">
+        <label for="{{ task_form.group.id_for_label }}"><i class="fas fa-layer-group"></i> Группа</label>
+        {{ task_form.group }}
+        {% if task_form.group.errors %}
+          <div class="errorlist">{{ task_form.group.errors }}</div>
+        {% endif %}
+      </div>
+
+      <div class="form-group">
+        <label for="{{ task_form.points.id_for_label }}"><i class="fas fa-star"></i> Баллы за выполнение</label>
+        {{ task_form.points }}
+        {% if task_form.points.errors %}
+          <div class="errorlist">{{ task_form.points.errors }}</div>
+        {% endif %}
+        <div class="help-text">Сколько баллов получит пользователь за выполнение</div>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn-secondary" id="cancelTaskModal">
+          <i class="fas fa-times"></i> Отмена
+        </button>
+        <button type="submit" class="btn-primary">
+          <i class="fas fa-plus"></i> Создать задачу
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
 {% endblock %}

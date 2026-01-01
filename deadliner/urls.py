@@ -30,4 +30,5 @@ urlpatterns = [
     path("groups/<int:group_id>/tasks/", group_tasks, name="group_tasks_api"),
     path("tasks/<int:task_id>/toggle/", toggle_task),
     path('group/<int:group_id>/', task_views.group_detail, name='group_detail'),
+    path('tasks/create/', task_views.create_task, name='create_task'),
 ]

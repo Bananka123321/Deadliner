@@ -4,8 +4,8 @@ from .serializers import TaskSerializer, UserTaskSerializer, UserStatsSerializer
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
-from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
+from .forms import TaskForm
 
 def home(request):
     if request.user.is_authenticated:
@@ -36,6 +36,7 @@ def home_logged(request):
         'total_done': total_done,
         'expired': expired,
         'current_streak': current_streak,
+        'task_form': TaskForm(user=user),
     }
 
     return render(request, 'tasks/home_logged.html', context)
@@ -141,3 +142,13 @@ def group_detail(request, group_id):
     }
 
     return render(request, 'tasks/group_detail.html', context)
+
+@login_required
+def create_task(request):
+    if request.method == 'POST':
+        form = TaskForm(request.POST, user=request.user)
+        if form.is_valid():
+            form.save()
+            return redirect('home_logged')
+
+    return redirect('home_logged')

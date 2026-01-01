@@ -15,65 +15,88 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }, observerOptions);
 
-  
   document.querySelectorAll('.stat-card, .task-group').forEach(el => {
     el.style.opacity = 0;
     el.style.transform = 'translateY(20px)';
     el.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
     observer.observe(el);
   });
-
-  
-  const modal = document.getElementById('taskModal');
-  const modalTitle = document.getElementById('modal-title');
-  const modalTasks = document.getElementById('modal-tasks');
-  const closeModalBtn = modal.querySelector('.modal-close');
-
-  document.querySelectorAll('.task-group').forEach(group => {
-    group.addEventListener('click', (e) => {
-    if(e.target.tagName.toLowerCase() === 'button') return;
-
-    const groupName = group.querySelector('.group-header h3').textContent;
-    const tasks = group.querySelectorAll('.task-item');
-
-    modalTitle.textContent = `Задачи: ${groupName}`;
-    modalTasks.innerHTML = '';
-
-    tasks.forEach(task => {
-      const taskClone = task.cloneNode(true);
-      const icon = taskClone.querySelector('.task-icon');
-
-      if(icon) {
-        icon.style.fontSize = '1.4rem';
-      }
-
-      modalTasks.appendChild(taskClone);
-    });
-
-    modal.classList.add('show');
-    document.body.style.overflow = 'hidden';
-    });
-    });
-
-  
-  function closeModal() {
-    modal.classList.remove('show');
-    document.body.style.overflow = 'auto';
-  }
-
-  closeModalBtn.addEventListener('click', closeModal);
-  modal.addEventListener('click', (e) => {
-    if (e.target === modal) closeModal();
-  });
-
   
   function animateNeonCards() {
     document.querySelectorAll('.stat-card').forEach((card, index) => {
       setTimeout(() => {
-        card.style.boxShadow = getComputedStyle(card).getPropertyValue('--neon-shadow') || card.style.boxShadow;
+        if (card.classList.contains('neon-success')) {
+          card.style.boxShadow = '0 0 0 rgba(0,0,0,0), var(--neon-success)';
+        } else if (card.classList.contains('neon-streak')) {
+          card.style.boxShadow = '0 0 0 rgba(0,0,0,0), var(--neon-streak)';
+        } else if (card.classList.contains('neon-warning')) {
+          card.style.boxShadow = '0 0 0 rgba(0,0,0,0), var(--neon-warning)';
+        }
       }, 300 * index);
     });
   }
+
+  document.querySelectorAll('.task-group.clickable').forEach(card => {
+    card.addEventListener('click', (e) => {
+        if (
+            e.target.closest('button') ||
+            e.target.closest('a') ||
+            e.target.closest('form')
+        ) {
+            return;
+        }
+
+        const href = card.dataset.href;
+        if (href) {
+            window.location.href = href;
+        }
+    });
+  });
+
+  const taskModal = document.getElementById('taskModal');
+  const openBtn = document.getElementById('openTaskModal');
+  const closeBtn = document.getElementById('closeTaskModal');
+  const cancelBtn = document.getElementById('cancelTaskModal');
+  const modalContent = taskModal.querySelector('.modal-content.task-modal');
+
+  openBtn.addEventListener('click', () => {
+    taskModal.classList.add('show');
+    document.body.style.overflow = 'hidden';
+    
+    setTimeout(() => {
+      document.querySelectorAll('.form-group').forEach(group => {
+        group.style.opacity = '0';
+        group.style.transform = 'translateY(10px)';
+      });
+      
+      setTimeout(() => {
+        modalContent.classList.add('show');
+      }, 50);
+    }, 300);
+  });
+
+  function closeModal() {
+    modalContent.classList.remove('show');
+    setTimeout(() => {
+      taskModal.classList.remove('show');
+      document.body.style.overflow = 'auto';
+    }, 300);
+  }
+
+  closeBtn.addEventListener('click', closeModal);
+  cancelBtn.addEventListener('click', closeModal);
+
+  taskModal.addEventListener('click', (e) => {
+    if (e.target === taskModal) {
+      closeModal();
+    }
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && taskModal.classList.contains('show')) {
+      closeModal();
+    }
+  });
 
   setTimeout(animateNeonCards, 1000);
   setInterval(animateNeonCards, 5000);
