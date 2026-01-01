@@ -69,6 +69,7 @@
       <div class="section-header">
         <h2>Ваши группы</h2>
         <div class="actions">
+          <button class="btn-secondary" id="openGroupModal"><i class="fas fa-users-cog"></i> Новая группа </button>
           <button class="btn-primary" id="openTaskModal"><i class="fas fa-plus"></i> Новая задача</button>
         </div>
       </div>
@@ -175,6 +176,33 @@
         <button type="submit" class="btn-primary">
           <i class="fas fa-plus"></i> Создать задачу
         </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="modal-overlay group-modal" id="groupModal">
+  <div class="modal-content group-modal">
+    <div class="modal-header">
+      <h3><i class="fas fa-users"></i> Новая группа</h3>
+      <button class="modal-close" id="closeGroupModal">&times;</button>
+    </div>
+
+    <form method="post" action="{% url 'create_group' %}" id="groupForm">
+      {% csrf_token %}
+
+      <div class="form-group">
+        <label for="{{ group_form.name.id_for_label }}"><i class="fas fa-tag"></i> Название группы</label>
+        {{ group_form.name }}
+        {% if group_form.name.errors %}
+          <div class="errorlist">{{ group_form.name.errors }}</div>
+        {% endif %}
+        <div class="help-text">Например: ИТ-21 или Проект Х</div>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn-secondary" id="cancelGroupModal">Отмена</button>
+        <button type="submit" class="btn-primary">Создать группу</button>
       </div>
     </form>
   </div>

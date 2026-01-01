@@ -1,11 +1,11 @@
 from rest_framework import viewsets
-from .models import Task, UserTask, UserStats, ClassGroup
+from .models import Task, UserTask, UserStats, ClassGroup, GroupRole
 from .serializers import TaskSerializer, UserTaskSerializer, UserStatsSerializer
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from .forms import TaskForm
+from .forms import TaskForm, ClassGroupForm
 
 def home(request):
     if request.user.is_authenticated:
@@ -37,6 +37,7 @@ def home_logged(request):
         'expired': expired,
         'current_streak': current_streak,
         'task_form': TaskForm(user=user),
+        'group_form': ClassGroupForm(),
     }
 
     return render(request, 'tasks/home_logged.html', context)
@@ -151,4 +152,18 @@ def create_task(request):
             form.save()
             return redirect('home_logged')
 
+    return redirect('home_logged')
+
+@login_required
+def create_group(request):
+    if request.method == 'POST':
+        form = ClassGroupForm(request.POST)
+        if form.is_valid():
+            # Сохраняем группу, но members добавим позже
+            group = form.save()
+            # Добавляем создателя в участники
+            group.members.add(request.user)
+            # Назначаем роль админа
+            GroupRole.objects.create(user=request.user, group=group, role='admin')
+            return redirect('home_logged')
     return redirect('home_logged')

@@ -98,6 +98,43 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
+const groupModal = document.getElementById('groupModal');
+const openGroupBtn = document.getElementById('openGroupModal');
+const closeGroupBtn = document.getElementById('closeGroupModal');
+const cancelGroupBtn = document.getElementById('cancelGroupModal');
+const groupModalContent = groupModal.querySelector('.modal-content');
+
+if (openGroupBtn) {
+  openGroupBtn.addEventListener('click', () => {
+    groupModal.classList.add('show');
+    document.body.style.overflow = 'hidden';
+    setTimeout(() => {
+      groupModalContent.classList.add('show');
+    }, 50);
+  });
+}
+
+function closeGroupModal() {
+  groupModalContent.classList.remove('show');
+  setTimeout(() => {
+    groupModal.classList.remove('show');
+    document.body.style.overflow = 'auto';
+  }, 300);
+}
+
+if (closeGroupBtn) closeGroupBtn.addEventListener('click', closeGroupModal);
+if (cancelGroupBtn) cancelGroupBtn.addEventListener('click', closeGroupModal);
+
+groupModal.addEventListener('click', (e) => {
+  if (e.target === groupModal) closeGroupModal();
+});
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    if (groupModal.classList.contains('show')) closeGroupModal();
+  }
+});
+
   setTimeout(animateNeonCards, 1000);
   setInterval(animateNeonCards, 5000);
 });

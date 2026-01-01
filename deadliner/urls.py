@@ -23,6 +23,7 @@ from tasks.views import toggle_task, group_tasks, group_detail
 
 urlpatterns = [
     path("admin/", admin.site.urls),
+    path("", include("tasks.urls")),
     path("", task_views.home, name="home"),
     path("dashboard/", task_views.home_logged, name="home_logged"),
     path("users/", include("users.urls")),
