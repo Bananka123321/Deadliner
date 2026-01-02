@@ -99,7 +99,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   setupModal(elements.groupModal, elements.openGroupBtn, elements.closeGroupBtn, elements.cancelGroupBtn, elements.groupForm, 'Группа успешно создана!');
-  setupModal(elements.taskModal, elements.openTaskBtn, elements.closeTaskBtn, elements.cancelTaskBtn, elements.taskForm);
+  setupModal(elements.taskModal, elements.openTaskBtn, elements.closeTaskBtn, elements.cancelTaskBtn, elements.taskForm, 'Задача успешно создана!');
 
   function setupModal(modal, openBtn, closeBtn, cancelBtn, form, successMessage) {
       if (!modal || !openBtn) return;
@@ -150,7 +150,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (form) {
           form.addEventListener('submit', function(e) {
-              e.preventDefault();
+              
               const submitBtn = this.querySelector('button[type="submit"]');
               if (!submitBtn) return;
               
@@ -158,14 +158,16 @@ document.addEventListener('DOMContentLoaded', () => {
               submitBtn.disabled = true;
               submitBtn.style.opacity = '0.85';
 
+              e.preventDefault();
               setTimeout(() => {
-                  closeModal();
-                  submitBtn.innerHTML = submitBtn.innerHTML.includes('Группу') 
-                      ? '<i class="fas fa-plus"></i> Создать группу' 
-                      : '<i class="fas fa-plus"></i> Создать задачу';
-                  submitBtn.disabled = false;
-                  submitBtn.style.opacity = '1';
-                  if (successMessage) showNotification(successMessage, 'success');
+                    this.submit();    
+                    closeModal();
+                    submitBtn.innerHTML = submitBtn.innerHTML.includes('Группу') 
+                        ? '<i class="fas fa-plus"></i> Создать группу' 
+                        : '<i class="fas fa-plus"></i> Создать задачу';
+                    submitBtn.disabled = false;
+                    submitBtn.style.opacity = '1';
+                    if (successMessage) showNotification(successMessage, 'success');
               }, 1500);
           });
       }
