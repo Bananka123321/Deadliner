@@ -193,3 +193,48 @@ def create_group(request):
             return redirect('home_logged')
     
     return redirect('home_logged')
+
+@login_required
+def get_calendar_tasks(request):
+    user = request.user
+    
+    start_str = request.GET.get('start')
+    end_str = request.GET.get('end')
+    
+    if start_str and end_str:
+        try:
+            start_date = timezone.datetime.fromisoformat(start_str)
+            end_date = timezone.datetime.fromisoformat(end_str) + timezone.timedelta(days=1)
+        except:
+            start_date = timezone.now() - timezone.timedelta(days=30)
+            end_date = timezone.now() + timezone.timedelta(days=30)
+    else:
+        today = timezone.now()
+        start_date = timezone.datetime(today.year, today.month, 1)
+        if today.month == 12:
+            end_date = timezone.datetime(today.year + 1, 2, 1)
+        else:
+            end_date = timezone.datetime(today.year, today.month + 2, 1)
+    
+    user_tasks = UserTask.objects.filter(
+        user=user,
+        task__deadline__gte=start_date,
+        task__deadline__lte=end_date
+    ).select_related('task', 'task__group')
+    
+    tasks_data = []
+    for ut in user_tasks:
+        task = ut.task
+        tasks_data.append({
+            'id': task.id,
+            'title': task.title,
+            'description': task.description,
+            'deadline': task.deadline.isoformat(),
+            'discipline': task.discipline,
+            'group': task.group.name if task.group else 'Без группы',
+            'points': task.points,
+            'isCompleted': ut.is_done,
+            'isGroupTask': True if task.group else False
+        })
+    
+    return JsonResponse(tasks_data, safe=False)
