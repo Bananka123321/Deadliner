@@ -78,7 +78,7 @@
     <div class="content-container">
       <!--Секция ГРУПП-->
       <section id="groups-section" class="content-section active">
-        <div class="tasks-section">
+        <div class="section-wrapper">
           <div class="section-header">
             <h2>Ваши группы</h2>
             <div class="actions">
@@ -126,7 +126,7 @@
 
       <!-- Секция ЗАДАЧ -->
       <section id="tasks-section" class="content-section">
-        <div class="tasks-section">
+        <div class="section-wrapper">
           <div class="section-header">
             <h2>Все задачи</h2>
             <div class="actions">
@@ -167,7 +167,7 @@
 
       <!--Секция КАЛЕНДАРЬ-->
       <section id="calendar-section" class="content-section">
-        <div class="calendar-section">
+        <div class="section-wrapper">
           <div class="section-header">
             <h2><i class="fas fa-calendar-alt me-2"></i> Календарь задач</h2>
             <div class="calendar-controls">
@@ -350,32 +350,4 @@
     </form>
   </div>
 </div>
-
-<div class="modal-overlay group-modal" id="groupModal">
-  <div class="modal-content group-modal">
-    <div class="modal-header">
-      <h3><i class="fas fa-users"></i> Новая группа</h3>
-      <button class="modal-close" id="closeGroupModal">&times;</button>
-    </div>
-
-    <form method="post" action="{% url 'create_group' %}" id="groupForm">
-      {% csrf_token %}
-
-      <div class="form-group">
-        <label for="{{ group_form.name.id_for_label }}"><i class="fas fa-tag"></i> Название группы</label>
-        {{ group_form.name }}
-        {% if group_form.name.errors %}
-          <div class="errorlist">{{ group_form.name.errors }}</div>
-        {% endif %}
-        <div class="help-text">Например: ИТ-21 или Проект Х</div>
-      </div>
-
-      <div class="modal-actions">
-        <button type="button" class="btn-secondary" id="cancelGroupModal">Отмена</button>
-        <button type="submit" class="btn-primary">Создать группу</button>
-      </div>
-    </form>
-  </div>
-</div>
-
 {% endblock %}
