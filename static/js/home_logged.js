@@ -1,4 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
+<<<<<<< Updated upstream
   const elements = {
       groupModal: document.getElementById('groupModal'),
       openGroupBtn: document.getElementById('openGroupModal'),
@@ -11,6 +12,27 @@ document.addEventListener('DOMContentLoaded', () => {
       cancelTaskBtn: document.getElementById('cancelTaskModal'),
       taskForm: document.getElementById('taskForm')
   };
+=======
+    const elements = {
+        groupModal: document.getElementById('groupModal'),
+        openGroupBtn: document.getElementById('openGroupModal'),
+        closeGroupBtn: document.getElementById('closeGroupModal'),
+        cancelGroupBtn: document.getElementById('cancelGroupModal'),
+        groupForm: document.getElementById('groupForm'),
+        taskModal: document.getElementById('taskModal'),
+        openTaskBtn: document.getElementById('openTaskModal'),
+        closeTaskBtn: document.getElementById('closeTaskModal'),
+        cancelTaskBtn: document.getElementById('cancelTaskModal'),
+        taskForm: document.getElementById('taskForm'),
+
+        taskDetailsModal: document.getElementById('taskDetailsModal'),
+        closeTaskDetails: document.getElementById('closeTaskDetails'),
+        taskTitle: document.getElementById('taskTitle'),
+        taskDetailsContent: document.getElementById('taskDetailsContent'),
+        completeTaskBtn: document.getElementById('completeTaskBtn'),
+        editTaskBtn: document.getElementById('editTaskBtn')
+    };
+>>>>>>> Stashed changes
 
   const menuItems = document.querySelectorAll('.menu li[data-section]');
   const contentSections = document.querySelectorAll('.content-section');
@@ -71,6 +93,7 @@ document.addEventListener('DOMContentLoaded', () => {
       observer.observe(el);
   });
 
+<<<<<<< Updated upstream
   function animateNeonCards() {
       document.querySelectorAll('.stat-card').forEach((card, index) => {
           setTimeout(() => {
@@ -89,6 +112,319 @@ document.addEventListener('DOMContentLoaded', () => {
       });
   }
   setTimeout(animateNeonCards, 1000);
+=======
+
+    const completeBtn = document.getElementById('completeTaskBtn');
+    if (completeBtn) {
+        completeBtn.addEventListener('click', async () => {
+            if (!currentTaskId) return;
+
+            try {
+                const response = await fetch(`/toggle-task/${currentTaskId}/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': getCookie('csrftoken'),
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+
+                const data = await response.json();
+                if (data.ok) {
+                     
+                    document.getElementById('taskDetailsModal').classList.remove('show');
+                    location.reload(); 
+                }
+            } catch (error) {
+                console.error('Ошибка:', error);
+                alert('Не удалось обновить статус задачи');
+            }
+        });
+    }
+
+     
+    const editBtn = document.getElementById('editTaskBtn');
+
+    if (editBtn) {
+        editBtn.addEventListener('click', async () => {
+            try {
+                 
+                const response = await fetch(`/tasks/edit/${currentTaskId}/`, {
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                });
+                const taskData = await response.json();
+
+                 
+                document.getElementById('taskDetailsModal').classList.remove('show');
+
+                 
+                const taskModal = document.getElementById('taskModal');
+                const form = document.getElementById('taskForm');
+                
+                 
+                form.action = `/tasks/edit/${currentTaskId}/`;
+
+                form.querySelector('[name="title"]').value = taskData.title;
+                form.querySelector('[name="description"]').value = taskData.description;
+                form.querySelector('[name="discipline"]').value = taskData.discipline;
+                form.querySelector('[name="deadline"]').value = taskData.deadline;
+                form.querySelector('[name="points"]').value = taskData.points;
+                form.querySelector('[name="group"]').value = taskData.group;
+
+                 
+                taskModal.querySelector('h3').innerHTML = '<i class="fas fa-edit"></i> Редактирование задачи';
+                form.querySelector('button[type="submit"]').textContent = "Сохранить изменения";
+
+                 
+                taskModal.classList.add('show');
+                
+            } catch (error) {
+                console.error('Ошибка:', error);
+                alert('Не удалось загрузить данные задачи');
+            }
+        });
+    }
+
+     
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    document.querySelectorAll('.task-group.clickable').forEach(card => {
+        card.addEventListener('click', (e) => {
+            if (e.target.closest('button,a,form,.list-task-item')) return;  
+            const href = card.dataset.href;
+            if (href) window.location.href = href;
+        });
+    });
+
+    let currentTaskId = null;
+
+    function openTaskActionModal(data) {
+        currentTaskId = data.id;
+        const modal = document.getElementById('taskDetailsModal');
+        
+        document.getElementById('taskTitle').textContent = data.title;
+        
+         
+        const date = new Date(data.deadline);
+        const dateStr = date.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+
+        document.getElementById('taskDetailsContent').innerHTML = `
+            <div class="task-detail-row"><strong>Срок:</strong> ${dateStr}</div>
+            <div class="task-detail-row"><strong>Группа:</strong> ${data.group}</div>
+            <div class="task-detail-row"><strong>Баллы:</strong> ${data.points}</div>
+            <div class="task-detail-row"><strong>Описание:</strong><br>${data.description || 'Нет описания'}</div>
+        `;
+
+        modal.classList.add('show');
+        document.body.style.overflow = 'hidden';
+    }
+
+    document.addEventListener('click', (e) => {
+        const taskItem = e.target.closest('.list-task-item');
+        if (taskItem) {
+            e.stopPropagation();
+            openTaskActionModal(taskItem.dataset);
+        }
+    });
+
+    document.getElementById('completeTaskBtn')?.addEventListener('click', async () => {
+        if (!currentTaskId) return;
+        
+        const response = await fetch(`/toggle-task/${currentTaskId}/`, {
+            method: 'POST',
+            headers: { 'X-Requested-With': 'XMLHttpRequest', 'X-CSRFToken': getCookie('csrftoken') }
+        });
+        
+        if (response.ok) {
+            location.reload();  
+        }
+    });
+
+    document.getElementById('editTaskBtn')?.addEventListener('click', () => {
+         
+        window.location.href = `/tasks/edit/${currentTaskId}/`; 
+    });
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    function openTaskModalFromList(taskElement) {
+        const data = taskElement.dataset;
+        currentTaskId = data.id;
+
+        elements.taskTitle.textContent = data.title;
+
+         
+        const dateObj = new Date(data.deadline);
+        const dateStr = dateObj.toLocaleDateString('ru-RU');
+        const timeStr = dateObj.toLocaleTimeString('ru-RU', {hour: '2-digit', minute:'2-digit'});
+
+         
+        elements.taskDetailsContent.innerHTML = `
+            <div class="task-detail-row">
+                <div class="task-detail-label">Срок:</div>
+                <div class="task-detail-value">
+                    <span class="deadline-badge normal">
+                        ${dateStr} в ${timeStr}
+                    </span>
+                </div>
+            </div>
+            <div class="task-detail-row">
+                <div class="task-detail-label">Группа:</div>
+                <div class="task-detail-value">
+                     <span class="group-badge group">${data.group}</span>
+                </div>
+            </div>
+            <div class="task-detail-row">
+                <div class="task-detail-label">Предмет:</div>
+                <div class="task-detail-value">${data.discipline || '—'}</div>
+            </div>
+            <div class="task-detail-row">
+                <div class="task-detail-label">Баллы:</div>
+                <div class="task-detail-value">
+                    <span class="points-badge"><i class="fas fa-star"></i> ${data.points}</span>
+                </div>
+            </div>
+            <div class="task-detail-row">
+                <div class="task-detail-label">Описание:</div>
+                <div class="task-detail-value">
+                    <div class="task-description">${data.description || 'Нет описания'}</div>
+                </div>
+            </div>
+        `;
+
+         
+        elements.completeTaskBtn.innerHTML = '<i class="fas fa-check"></i> Выполнить';
+        elements.completeTaskBtn.disabled = false;
+        elements.completeTaskBtn.classList.remove('btn-secondary');
+        elements.completeTaskBtn.classList.add('btn-primary');
+
+        elements.taskDetailsModal.classList.add('show');
+        document.body.style.overflow = 'hidden';
+    }
+
+    document.querySelectorAll('.list-task-item').forEach(item => {
+        item.addEventListener('click', (e) => {
+            e.stopPropagation();  
+            openTaskModalFromList(item);
+        });
+    });
+
+    if (elements.completeTaskBtn) {
+        elements.completeTaskBtn.addEventListener('click', async () => {
+            if (!currentTaskId) return;
+
+            const btn = elements.completeTaskBtn;
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Сохранение...';
+            btn.disabled = true;
+
+            try {
+                const response = await fetch(`/toggle-task/${currentTaskId}/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+
+                const data = await response.json();
+                
+                if (data.ok) {
+                    showNotification('Задача выполнена!', 'success');
+                    elements.taskDetailsModal.classList.remove('show');
+                    document.body.style.overflow = 'auto';
+                    
+                     
+                    setTimeout(() => {
+                        location.reload(); 
+                    }, 500);
+                } else {
+                    showNotification('Ошибка при обновлении статуса', 'error');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showNotification('Ошибка сети', 'error');
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        });
+    }
+
+    if (elements.editTaskBtn) {
+        elements.editTaskBtn.addEventListener('click', () => {
+             
+            elements.taskDetailsModal.classList.remove('show');
+            
+             
+             
+            showNotification('Функция редактирования в разработке', 'info');
+            
+             
+             
+        });
+    }
+
+    if (elements.closeTaskDetails) {
+        elements.closeTaskDetails.addEventListener('click', () => {
+            elements.taskDetailsModal.classList.remove('show');
+            document.body.style.overflow = 'auto';
+        });
+    }
+    
+     
+    if (elements.taskDetailsModal) {
+        elements.taskDetailsModal.addEventListener('click', (e) => {
+            if (e.target === elements.taskDetailsModal) {
+                elements.taskDetailsModal.classList.remove('show');
+                document.body.style.overflow = 'auto';
+            }
+        });
+    }
+
+    function animateNeonCards() {
+        document.querySelectorAll('.stat-card').forEach((card, index) => {
+            setTimeout(() => {
+                let boxShadowColor = '';
+                if (card.classList.contains('neon-success')) boxShadowColor = 'var(--neon-success)';
+                else if (card.classList.contains('neon-streak')) boxShadowColor = 'var(--neon-streak)';
+                else if (card.classList.contains('neon-warning')) boxShadowColor = 'var(--neon-warning)';
+                
+                if (boxShadowColor) {
+                    card.style.boxShadow = `var(--shadow-md), ${boxShadowColor}`;
+                    setTimeout(() => {
+                        card.style.boxShadow = 'var(--shadow-md)';
+                    }, 1500);
+                }
+            }, 300 * index);
+        });
+    }
+    setTimeout(animateNeonCards, 1000);
+>>>>>>> Stashed changes
 
   document.querySelectorAll('.task-group.clickable').forEach(card => {
       card.addEventListener('click', (e) => {
@@ -158,6 +494,7 @@ document.addEventListener('DOMContentLoaded', () => {
               submitBtn.disabled = true;
               submitBtn.style.opacity = '0.85';
 
+<<<<<<< Updated upstream
               e.preventDefault();
               setTimeout(() => {
                     this.submit();    
@@ -172,6 +509,11 @@ document.addEventListener('DOMContentLoaded', () => {
           });
       }
   }
+=======
+            });
+        }
+    }
+>>>>>>> Stashed changes
 
   function showNotification(message, type = 'info') {
       if (document.getElementById('notification-styles')) {
@@ -262,6 +604,7 @@ document.addEventListener('DOMContentLoaded', () => {
           this.renderCalendar();
       }
 
+<<<<<<< Updated upstream
       setupEventListeners() {
           if (this.elements.prevBtn) {
               this.elements.prevBtn.addEventListener('click', () => this.changeMonth(-1));
@@ -404,6 +747,54 @@ document.addEventListener('DOMContentLoaded', () => {
           }
           this.renderCalendar();
       }
+=======
+        setupEventListeners() {
+            if (this.elements.prevBtn) {
+                this.elements.prevBtn.addEventListener('click', () => this.changeMonth(-1));
+            }
+            if (this.elements.nextBtn) {
+                this.elements.nextBtn.addEventListener('click', () => this.changeMonth(1));
+            }
+            this.elements.viewButtons.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    this.elements.viewButtons.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    this.currentView = btn.dataset.view;
+                    this.renderCalendar();
+                });
+            });
+        }
+
+        async loadTasks(startDate = null, endDate = null) {
+            try {
+                if (!startDate || !endDate) {
+                    const today = new Date();
+                    startDate = new Date(today.getFullYear() - 1, 0, 1);  
+                    endDate = new Date(today.getFullYear() + 1, 11, 31);  
+                }
+
+                const startParam = startDate.toISOString().split('T')[0];
+                const endParam = endDate.toISOString().split('T')[0];
+                
+                const response = await fetch(`/api/calendar-tasks/?start=${startParam}&end=${endParam}`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                return data.map(task => ({
+                    ...task,
+                    deadline: new Date(task.deadline)
+                }));
+                
+            } catch (error) {
+                console.error('Ошибка при загрузке задач:', error);
+                showNotification('Не удалось загрузить задачи.', 'error');
+                return [];
+            }
+        }
+>>>>>>> Stashed changes
 
       renderCalendar() {
           if (!this.elements.grid) return;
@@ -611,6 +1002,7 @@ document.addEventListener('DOMContentLoaded', () => {
           document.body.style.overflow = 'hidden';
       }
 
+<<<<<<< Updated upstream
       renderSingleTask(task) {
           if (!this.elements.taskTitle || !this.elements.taskDetailsContent) return;
           
@@ -674,6 +1066,44 @@ document.addEventListener('DOMContentLoaded', () => {
               }
           }
       }
+=======
+        showTaskDetails(task) {
+             currentTaskId = task.id;  
+             
+             const modal = document.getElementById('taskDetailsModal');
+             document.getElementById('taskTitle').textContent = task.title;
+             
+             const dateStr = task.deadline.toLocaleDateString('ru-RU');
+             const timeStr = task.deadline.toLocaleTimeString('ru-RU', {hour: '2-digit', minute:'2-digit'});
+             
+             document.getElementById('taskDetailsContent').innerHTML = `
+                <div class="task-detail-row">
+                    <div class="task-detail-label">Срок:</div>
+                    <div class="task-detail-value">${dateStr} ${timeStr}</div>
+                </div>
+                <div class="task-detail-row">
+                    <div class="task-detail-label">Группа:</div>
+                    <div class="task-detail-value">${task.group}</div>
+                </div>
+                <div class="task-detail-row">
+                    <div class="task-detail-label">Описание:</div>
+                    <div class="task-detail-value">${task.description || '—'}</div>
+                </div>
+             `;
+             
+             const btn = document.getElementById('completeTaskBtn');
+             if (task.isCompleted) {
+                 btn.innerHTML = '<i class="fas fa-check"></i> Выполнено';
+                 btn.disabled = true;
+             } else {
+                 btn.innerHTML = '<i class="fas fa-check"></i> Выполнить';
+                 btn.disabled = false;
+             }
+
+             modal.classList.add('show');
+             document.body.style.overflow = 'hidden';
+        }
+>>>>>>> Stashed changes
 
       renderMultipleTasks(date, tasks) {
           if (!this.elements.taskTitle || !this.elements.taskDetailsContent) return;
