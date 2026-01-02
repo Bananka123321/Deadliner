@@ -12,7 +12,7 @@
   <aside class="sidebar">
     <div class="logo">
       <div class="logo-icon">🚀</div>
-      <span class="logo-text">TaskFlow</span>
+      <span class="logo-text">DeadLiner</span>
     </div>
     
     <nav class="menu">
@@ -50,27 +50,39 @@
     <!--СЕКЦИЯ СТАТИСТИКИ-->
     <div class="stats-grid">
       <div class="stat-card neon-success">
-        <div class="stat-icon">✔</div>
-        <div class="stat-details">
-          <span class="stat-label">Всего выполнено</span>
-          <span class="stat-value" id="total-done">{{ total_done }}</span>
-        </div>
+          <div class="stat-icon">📊</div>
+          <div class="stat-details">
+              <span class="stat-label">Прогресс задач</span>
+              <span class="stat-value">{{ progress_percent }}%</span>
+              <div class="stat-progress-bar">
+                  <div class="stat-progress-fill" style="width: {{ progress_percent }}%"></div>
+              </div>
+          </div>
+      </div>
+
+      <div class="stat-card rank-highlight">
+          <div class="stat-icon">🏆</div>
+          <div class="stat-details">
+              <span class="stat-label">Место в рейтинге</span>
+              <span class="stat-value">#{{ rank }}</span>
+              <span class="subtitle">среди всех юзеров</span>
+          </div>
       </div>
 
       <div class="stat-card neon-streak">
-        <div class="stat-icon">🔥</div>
-        <div class="stat-details">
-          <span class="stat-label">Текущий стрик</span>
-          <span class="stat-value" id="current-streak">{{ current_streak }}</span>
-        </div>
+          <div class="stat-icon">🔥</div>
+          <div class="stat-details">
+              <span class="stat-label">Стрик дней</span>
+              <span class="stat-value">{{ current_streak }}</span>
+          </div>
       </div>
 
       <div class="stat-card neon-warning">
-        <div class="stat-icon">⏰</div>
-        <div class="stat-details">
-          <span class="stat-label">Просрочено</span>
-          <span class="stat-value" id="expired">{{ expired }}</span>
-        </div>
+          <div class="stat-icon">⏳</div>
+          <div class="stat-details">
+              <span class="stat-label">Нужно сделать</span>
+              <span class="stat-value">{{ total_pending }}</span>
+          </div>
       </div>
     </div>
 

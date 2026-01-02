@@ -7,6 +7,7 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from .forms import TaskForm
 from django.contrib import messages
+from django.db.models import Count
 
 def home(request):
     if request.user.is_authenticated:
@@ -99,21 +100,24 @@ def get_group_tasks(user):
 
 def dashboard(request):
     user = request.user
+    stats = user.stats
     
     total_done = user.stats.total_done()
-    expired = user.stats.total_expired()
-    current_streak = user.stats.streak
+    current_streak = stats.streak
     
-    group_tasks = get_group_tasks(user)
-    personal_tasks = get_personal_tasks(user)
+    total_pending = user.tasks.filter(is_completed=False).count()
+    
+    total_tasks = total_done + total_pending
+    progress_percent = int(total_done / total_tasks * 100) if total_tasks > 0 else 0
+    
+    higher_users_count = UserStats.objects.filter(completed_tasks_count__gt=total_done).count()
+    rank = higher_users_count + 1
     
     return render(request, 'dashboard.html', {
         'total_done': total_done,
-        'expired': expired,
+        'progress_percent': progress_percent,
+        'rank': rank,
         'current_streak': current_streak,
-        'group_tasks': group_tasks,
-        'personal_tasks': personal_tasks,
-        'username': user,
     })
 
 class TaskViewSet(viewsets.ModelViewSet):
