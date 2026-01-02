@@ -7,12 +7,8 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from .forms import TaskForm
 from django.contrib import messages
-<<<<<<< Updated upstream
-from django.db.models import Count
-=======
 from django.utils import timezone
 from django.views.decorators.http import require_POST
->>>>>>> Stashed changes
 
 def home(request):
     if request.user.is_authenticated:
@@ -203,9 +199,6 @@ def create_group(request):
             messages.error(request, f'Ошибка при создании группы: {str(e)}')
             return redirect('home_logged')
     
-<<<<<<< Updated upstream
-    return redirect('home_logged')
-=======
     return redirect('home_logged')
 
 @login_required
@@ -300,4 +293,3 @@ def edit_task(request, task_id):
         'group': task.group.id if task.group else ''
     }
     return JsonResponse(data)
->>>>>>> Stashed changes

@@ -1,18 +1,4 @@
 document.addEventListener('DOMContentLoaded', () => {
-<<<<<<< Updated upstream
-  const elements = {
-      groupModal: document.getElementById('groupModal'),
-      openGroupBtn: document.getElementById('openGroupModal'),
-      closeGroupBtn: document.getElementById('closeGroupModal'),
-      cancelGroupBtn: document.getElementById('cancelGroupModal'),
-      groupForm: document.getElementById('groupForm'),
-      taskModal: document.getElementById('taskModal'),
-      openTaskBtn: document.getElementById('openTaskModal'),
-      closeTaskBtn: document.getElementById('closeTaskModal'),
-      cancelTaskBtn: document.getElementById('cancelTaskModal'),
-      taskForm: document.getElementById('taskForm')
-  };
-=======
     const elements = {
         groupModal: document.getElementById('groupModal'),
         openGroupBtn: document.getElementById('openGroupModal'),
@@ -32,7 +18,6 @@ document.addEventListener('DOMContentLoaded', () => {
         completeTaskBtn: document.getElementById('completeTaskBtn'),
         editTaskBtn: document.getElementById('editTaskBtn')
     };
->>>>>>> Stashed changes
 
   const menuItems = document.querySelectorAll('.menu li[data-section]');
   const contentSections = document.querySelectorAll('.content-section');
@@ -93,26 +78,6 @@ document.addEventListener('DOMContentLoaded', () => {
       observer.observe(el);
   });
 
-<<<<<<< Updated upstream
-  function animateNeonCards() {
-      document.querySelectorAll('.stat-card').forEach((card, index) => {
-          setTimeout(() => {
-              let boxShadowColor = '';
-              if (card.classList.contains('neon-success')) boxShadowColor = 'var(--neon-success)';
-              else if (card.classList.contains('neon-streak')) boxShadowColor = 'var(--neon-streak)';
-              else if (card.classList.contains('neon-warning')) boxShadowColor = 'var(--neon-warning)';
-              
-              if (boxShadowColor) {
-                  card.style.boxShadow = `var(--shadow-md), ${boxShadowColor}`;
-                  setTimeout(() => {
-                      card.style.boxShadow = 'var(--shadow-md)';
-                  }, 1500);
-              }
-          }, 300 * index);
-      });
-  }
-  setTimeout(animateNeonCards, 1000);
-=======
 
     const completeBtn = document.getElementById('completeTaskBtn');
     if (completeBtn) {
@@ -424,7 +389,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
     setTimeout(animateNeonCards, 1000);
->>>>>>> Stashed changes
 
   document.querySelectorAll('.task-group.clickable').forEach(card => {
       card.addEventListener('click', (e) => {
@@ -494,26 +458,9 @@ document.addEventListener('DOMContentLoaded', () => {
               submitBtn.disabled = true;
               submitBtn.style.opacity = '0.85';
 
-<<<<<<< Updated upstream
-              e.preventDefault();
-              setTimeout(() => {
-                    this.submit();    
-                    closeModal();
-                    submitBtn.innerHTML = submitBtn.innerHTML.includes('Группу') 
-                        ? '<i class="fas fa-plus"></i> Создать группу' 
-                        : '<i class="fas fa-plus"></i> Создать задачу';
-                    submitBtn.disabled = false;
-                    submitBtn.style.opacity = '1';
-                    if (successMessage) showNotification(successMessage, 'success');
-              }, 1500);
-          });
-      }
-  }
-=======
             });
         }
     }
->>>>>>> Stashed changes
 
   function showNotification(message, type = 'info') {
       if (document.getElementById('notification-styles')) {
@@ -604,150 +551,6 @@ document.addEventListener('DOMContentLoaded', () => {
           this.renderCalendar();
       }
 
-<<<<<<< Updated upstream
-      setupEventListeners() {
-          if (this.elements.prevBtn) {
-              this.elements.prevBtn.addEventListener('click', () => this.changeMonth(-1));
-          }
-          if (this.elements.nextBtn) {
-              this.elements.nextBtn.addEventListener('click', () => this.changeMonth(1));
-          }
-          this.elements.viewButtons.forEach(btn => {
-              btn.addEventListener('click', () => {
-                  this.elements.viewButtons.forEach(b => b.classList.remove('active'));
-                  btn.classList.add('active');
-                  this.currentView = btn.dataset.view;
-                  this.renderCalendar();
-              });
-          });
-          if (this.elements.closeTaskDetails) {
-              this.elements.closeTaskDetails.addEventListener('click', () => this.hideTaskDetails());
-          }
-          if (this.elements.taskDetailsModal) {
-              this.elements.taskDetailsModal.addEventListener('click', (e) => {
-                  if (e.target === this.elements.taskDetailsModal) this.hideTaskDetails();
-              });
-          }
-          document.addEventListener('keydown', (e) => {
-              if (e.key === 'Escape' && this.elements.taskDetailsModal?.classList.contains('show')) {
-                  this.hideTaskDetails();
-              }
-          });
-          if (this.elements.completeTaskBtn) {
-              this.elements.completeTaskBtn.addEventListener('click', () => {
-                  showNotification('Задача успешно выполнена!', 'success');
-                  this.hideTaskDetails();
-                  this.renderCalendar();
-              });
-          }
-          if (this.elements.editTaskBtn) {
-              this.elements.editTaskBtn.addEventListener('click', () => {
-                  showNotification('Редактирование задачи скоро будет доступно!', 'info');
-              });
-          }
-      }
-
-      loadTasks() {
-          const today = new Date();
-          const tomorrow = new Date(today);
-          tomorrow.setDate(today.getDate() + 1);
-          const nextWeek = new Date(today);
-          nextWeek.setDate(today.getDate() + 7);
-          
-          return [
-              {
-                  id: 1,
-                  title: 'Создать landing page',
-                  description: 'Разработать и сверстать одностраничный сайт для нового продукта',
-                  deadline: tomorrow,
-                  discipline: 'HTML/CSS',
-                  group: 'Веб-разработка',
-                  points: 15,
-                  isCompleted: false,
-                  isGroupTask: true
-              },
-              {
-                  id: 2,
-                  title: 'Решить задачу на BFS',
-                  description: 'Решить задачу поиска в ширину из учебного курса',
-                  deadline: new Date(2026, 5, 12),
-                  discipline: 'C++',
-                  group: 'Алгоритмы',
-                  points: 10,
-                  isCompleted: true,
-                  isGroupTask: true
-              },
-              {
-                  id: 3,
-                  title: 'Подготовить презентацию',
-                  description: 'Создать презентацию для защиты проекта',
-                  deadline: nextWeek,
-                  discipline: 'Soft Skills',
-                  group: 'Личное',
-                  points: 20,
-                  isCompleted: false,
-                  isGroupTask: false
-              },
-              {
-                  id: 4,
-                  title: 'Реализовать авторизацию',
-                  description: 'Добавить систему аутентификации в веб-приложение',
-                  deadline: new Date(2026, 5, 18),
-                  discipline: 'Django',
-                  group: 'Веб-разработка',
-                  points: 25,
-                  isCompleted: false,
-                  isGroupTask: true
-              },
-              {
-                  id: 5,
-                  title: 'Реализовать бинарный поиск',
-                  description: 'Написать алгоритм бинарного поиска и протестировать его',
-                  deadline: new Date(2026, 5, 14),
-                  discipline: 'Python',
-                  group: 'Алгоритмы',
-                  points: 12,
-                  isCompleted: false,
-                  isGroupTask: true
-              },
-              ...Array.from({length: 3}, (_, i) => ({
-                  id: 100 + i + 1,
-                  title: `Задача на сегодня ${i + 1}`,
-                  description: `Описание задачи на сегодня ${i + 1}`,
-                  deadline: new Date(today.getFullYear(), today.getMonth(), today.getDate(), 14 + i, 0),
-                  discipline: `Дисциплина ${i + 1}`,
-                  group: (i + 1) % 2 === 0 ? 'Личное' : 'Веб-разработка',
-                  points: 5 * (i + 1),
-                  isCompleted: i === 0,
-                  isGroupTask: (i + 1) % 2 !== 0
-              })),
-              ...Array.from({length: 2}, (_, i) => {
-                  const pastDate = new Date(today);
-                  pastDate.setDate(today.getDate() - (i + 1));
-                  return {
-                      id: 200 + i + 1,
-                      title: `Просроченная задача ${i + 1}`,
-                      description: `Эта задача была просрочена ${i + 1} дня(ей) назад`,
-                      deadline: pastDate,
-                      discipline: `Просрочено ${i + 1}`,
-                      group: 'Важное',
-                      points: 8 * (i + 1),
-                      isCompleted: false,
-                      isGroupTask: true
-                  };
-              })
-          ];
-      }
-
-      changeMonth(direction) {
-          if (this.currentView === 'month') {
-              this.currentDate.setMonth(this.currentDate.getMonth() + direction);
-          } else {
-              this.currentDate.setDate(this.currentDate.getDate() + (7 * direction));
-          }
-          this.renderCalendar();
-      }
-=======
         setupEventListeners() {
             if (this.elements.prevBtn) {
                 this.elements.prevBtn.addEventListener('click', () => this.changeMonth(-1));
@@ -794,7 +597,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 return [];
             }
         }
->>>>>>> Stashed changes
 
       renderCalendar() {
           if (!this.elements.grid) return;
@@ -1002,71 +804,6 @@ document.addEventListener('DOMContentLoaded', () => {
           document.body.style.overflow = 'hidden';
       }
 
-<<<<<<< Updated upstream
-      renderSingleTask(task) {
-          if (!this.elements.taskTitle || !this.elements.taskDetailsContent) return;
-          
-          this.elements.taskTitle.textContent = task.title;
-          const deadlineClass = this.getDeadlineClass(task.deadline);
-          
-          this.elements.taskDetailsContent.innerHTML = `
-              <div class="task-detail-row">
-                  <div class="task-detail-label">Дата:</div>
-                  <div class="task-detail-value">
-                      <span class="deadline-badge ${deadlineClass}">
-                          ${this.formatDeadline(task.deadline)} · ${this.formatTime(task.deadline)}
-                      </span>
-                  </div>
-              </div>
-              <div class="task-detail-row">
-                  <div class="task-detail-label">Группа:</div>
-                  <div class="task-detail-value">
-                      <span class="group-badge ${task.isGroupTask ? 'group' : 'personal'}">
-                          ${task.group}
-                      </span>
-                  </div>
-              </div>
-              <div class="task-detail-row">
-                  <div class="task-detail-label">Дисциплина:</div>
-                  <div class="task-detail-value">${task.discipline}</div>
-              </div>
-              <div class="task-detail-row">
-                  <div class="task-detail-label">Баллы:</div>
-                  <div class="task-detail-value">
-                      <span class="points-badge">
-                          <i class="fas fa-star"></i> ${task.points}
-                      </span>
-                  </div>
-              </div>
-              <div class="task-detail-row">
-                  <div class="task-detail-label">Описание:</div>
-                  <div class="task-detail-value">
-                      <div class="task-description">
-                          ${task.description || 'Без описания'}
-                      </div>
-                  </div>
-              </div>
-              <div class="task-detail-row">
-                  <div class="task-detail-label">Статус:</div>
-                  <div class="task-detail-value">
-                      <span class="status-badge ${task.isCompleted ? 'completed' : 'pending'}">
-                          ${task.isCompleted ? 'Выполнено' : 'В процессе'}
-                      </span>
-                  </div>
-              </div>
-          `;
-          
-          if (this.elements.completeTaskBtn) {
-              if (task.isCompleted) {
-                  this.elements.completeTaskBtn.disabled = true;
-                  this.elements.completeTaskBtn.innerHTML = '<i class="fas fa-check"></i> Выполнено';
-              } else {
-                  this.elements.completeTaskBtn.disabled = false;
-                  this.elements.completeTaskBtn.innerHTML = '<i class="fas fa-check"></i> Выполнить';
-              }
-          }
-      }
-=======
         showTaskDetails(task) {
              currentTaskId = task.id;  
              
@@ -1103,7 +840,6 @@ document.addEventListener('DOMContentLoaded', () => {
              modal.classList.add('show');
              document.body.style.overflow = 'hidden';
         }
->>>>>>> Stashed changes
 
       renderMultipleTasks(date, tasks) {
           if (!this.elements.taskTitle || !this.elements.taskDetailsContent) return;
