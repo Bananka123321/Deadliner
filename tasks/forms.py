@@ -38,3 +38,14 @@ class TaskForm(forms.ModelForm):
 
         if user:
             self.fields['group'].queryset = ClassGroup.objects.filter(members=user)
+
+class ClassGroupForm(forms.ModelForm):
+    class Meta:
+        model = ClassGroup
+        fields = ['name']
+        widgets = {
+            'name': forms.TextInput(attrs={
+                'class': 'form-control', 
+                'placeholder': 'Название группы (макс. 10 симв.)'
+            }),
+        }
