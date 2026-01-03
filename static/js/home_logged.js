@@ -9,9 +9,14 @@ document.addEventListener('DOMContentLoaded', () => {
         openTaskBtn: document.getElementById('openTaskModal'),
         closeTaskBtn: document.getElementById('closeTaskModal'),
         cancelTaskBtn: document.getElementById('cancelTaskModal'),
-        taskForm: document.getElementById('taskForm')
-    };
+        taskForm: document.getElementById('taskForm'),
 
+        taskDetailsModal: document.getElementById('taskDetailsModal'),
+        closeTaskDetails: document.getElementById('closeTaskDetails'),
+        taskTitle: document.getElementById('taskTitle'),
+        taskDetailsContent: document.getElementById('taskDetailsContent')
+    };
+    let currentTaskId = null;
     const menuItems = document.querySelectorAll('.menu li[data-section]');
     const contentSections = document.querySelectorAll('.content-section');
     let activeSection = localStorage.getItem('activeSection') || 'groups';
@@ -71,6 +76,139 @@ document.addEventListener('DOMContentLoaded', () => {
         observer.observe(el);
     });
 
+    document.querySelectorAll('.task-group.clickable').forEach(card => {
+        card.addEventListener('click', (e) => {
+            if (e.target.closest('button,a,form,.list-task-item')) return;  
+            const href = card.dataset.href;
+            if (href) window.location.href = href;
+        });
+    });
+
+    
+
+    function openTaskActionModal(data) {
+        currentTaskId = data.id;
+        const modal = document.getElementById('taskDetailsModal');
+        
+        document.getElementById('taskTitle').textContent = data.title;
+        
+         
+        const date = new Date(data.deadline);
+        const dateStr = date.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+
+        document.getElementById('taskDetailsContent').innerHTML = `
+            <div class="task-detail-row"><strong>Срок:</strong> ${dateStr}</div>
+            <div class="task-detail-row"><strong>Группа:</strong> ${data.group}</div>
+            <div class="task-detail-row"><strong>Баллы:</strong> ${data.points}</div>
+            <div class="task-detail-row"><strong>Описание:</strong><br>${data.description || 'Нет описания'}</div>
+        `;
+
+        modal.classList.add('show');
+        document.body.style.overflow = 'hidden';
+    }
+
+    document.addEventListener('click', (e) => {
+        const taskItem = e.target.closest('.list-task-item');
+        if (taskItem) {
+            e.stopPropagation();
+            openTaskActionModal(taskItem.dataset);
+        }
+    });
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    function openTaskModalFromList(taskElement) {
+        const data = taskElement.dataset;
+        currentTaskId = data.id;
+
+        elements.taskTitle.textContent = data.title;
+
+         
+        const dateObj = new Date(data.deadline);
+        const dateStr = dateObj.toLocaleDateString('ru-RU');
+        const timeStr = dateObj.toLocaleTimeString('ru-RU', {hour: '2-digit', minute:'2-digit'});
+
+         
+        elements.taskDetailsContent.innerHTML = `
+            <div class="task-detail-row">
+                <div class="task-detail-label">Срок:</div>
+                <div class="task-detail-value">
+                    <span class="deadline-badge normal">
+                        ${dateStr} в ${timeStr}
+                    </span>
+                </div>
+            </div>
+            <div class="task-detail-row">
+                <div class="task-detail-label">Группа:</div>
+                <div class="task-detail-value">
+                     <span class="group-badge group">${data.group}</span>
+                </div>
+            </div>
+            <div class="task-detail-row">
+                <div class="task-detail-label">Предмет:</div>
+                <div class="task-detail-value">${data.discipline || '—'}</div>
+            </div>
+            <div class="task-detail-row">
+                <div class="task-detail-label">Баллы:</div>
+                <div class="task-detail-value">
+                    <span class="points-badge"><i class="fas fa-star"></i> ${data.points}</span>
+                </div>
+            </div>
+            <div class="task-detail-row">
+                <div class="task-detail-label">Описание:</div>
+                <div class="task-detail-value">
+                    <div class="task-description">${data.description || 'Нет описания'}</div>
+                </div>
+            </div>
+        `;
+
+         
+        elements.completeTaskBtn.innerHTML = '<i class="fas fa-check"></i> Выполнить';
+        elements.completeTaskBtn.disabled = false;
+        elements.completeTaskBtn.classList.remove('btn-secondary');
+        elements.completeTaskBtn.classList.add('btn-primary');
+
+        elements.taskDetailsModal.classList.add('show');
+        document.body.style.overflow = 'hidden';
+    }
+
+    document.querySelectorAll('.list-task-item').forEach(item => {
+        item.addEventListener('click', (e) => {
+            e.stopPropagation();  
+            openTaskModalFromList(item);
+        });
+    });
+
+    if (elements.closeTaskDetails) {
+        elements.closeTaskDetails.addEventListener('click', () => {
+            elements.taskDetailsModal.classList.remove('show');
+            document.body.style.overflow = 'auto';
+        });
+    }
+    
+     
+    if (elements.taskDetailsModal) {
+        elements.taskDetailsModal.addEventListener('click', (e) => {
+            if (e.target === elements.taskDetailsModal) {
+                elements.taskDetailsModal.classList.remove('show');
+                document.body.style.overflow = 'auto';
+            }
+        });
+    }
+
     function animateNeonCards() {
         document.querySelectorAll('.stat-card').forEach((card, index) => {
             setTimeout(() => {
@@ -90,157 +228,145 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     setTimeout(animateNeonCards, 1000);
 
-    document.querySelectorAll('.task-group.clickable').forEach(card => {
-        card.addEventListener('click', (e) => {
-            if (e.target.closest('button,a,form,.task-item')) return;
-            const href = card.dataset.href;
-            if (href) window.location.href = href;
-        });
-    });
+  document.querySelectorAll('.task-group.clickable').forEach(card => {
+      card.addEventListener('click', (e) => {
+          if (e.target.closest('button,a,form,.task-item')) return;
+          const href = card.dataset.href;
+          if (href) window.location.href = href;
+      });
+  });
 
-    setupModal(elements.groupModal, elements.openGroupBtn, elements.closeGroupBtn, elements.cancelGroupBtn, elements.groupForm, 'Группа успешно создана!');
-    setupModal(elements.taskModal, elements.openTaskBtn, elements.closeTaskBtn, elements.cancelTaskBtn, elements.taskForm, 'Задача успешно создана!');
+  setupModal(elements.groupModal, elements.openGroupBtn, elements.closeGroupBtn, elements.cancelGroupBtn, elements.groupForm, 'Группа успешно создана!');
+  setupModal(elements.taskModal, elements.openTaskBtn, elements.closeTaskBtn, elements.cancelTaskBtn, elements.taskForm, 'Задача успешно создана!');
 
-    function setupModal(modal, openBtn, closeBtn, cancelBtn, form, successMessage) {
-        if (!modal || !openBtn) return;
-        
-        const formGroups = modal.querySelectorAll('.form-group');
-        formGroups.forEach(group => {
-            group.style.opacity = '0';
-            group.style.transform = 'translateY(10px)';
-            group.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
-        });
+  function setupModal(modal, openBtn, closeBtn, cancelBtn, form, successMessage) {
+      if (!modal || !openBtn) return;
+      
+      const formGroups = modal.querySelectorAll('.form-group');
+      formGroups.forEach(group => {
+          group.style.opacity = '0';
+          group.style.transform = 'translateY(10px)';
+          group.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+      });
 
-        const openModal = () => {
-            modal.classList.add('show');
-            document.body.style.overflow = 'hidden';
-            setTimeout(() => {
-                formGroups.forEach((group, index) => {
-                    setTimeout(() => {
-                        group.style.opacity = '1';
-                        group.style.transform = 'translateY(0)';
-                    }, 100 + (index * 70));
-                });
-            }, 100);
-        };
+      const openModal = () => {
+          modal.classList.add('show');
+          document.body.style.overflow = 'hidden';
+          setTimeout(() => {
+              formGroups.forEach((group, index) => {
+                  setTimeout(() => {
+                      group.style.opacity = '1';
+                      group.style.transform = 'translateY(0)';
+                  }, 100 + (index * 70));
+              });
+          }, 100);
+      };
 
-        const closeModal = () => {
-            formGroups.forEach((group, index) => {
-                setTimeout(() => {
-                    group.style.opacity = '0';
-                    group.style.transform = 'translateY(10px)';
-                }, index * 30);
-            });
-            setTimeout(() => {
-                modal.classList.remove('show');
-                document.body.style.overflow = 'auto';
-                if (form) form.reset();
-            }, 300);
-        };
+      const closeModal = () => {
+          formGroups.forEach((group, index) => {
+              setTimeout(() => {
+                  group.style.opacity = '0';
+                  group.style.transform = 'translateY(10px)';
+              }, index * 30);
+          });
+          setTimeout(() => {
+              modal.classList.remove('show');
+              document.body.style.overflow = 'auto';
+              if (form) form.reset();
+          }, 300);
+      };
 
-        openBtn.addEventListener('click', openModal);
-        if (closeBtn) closeBtn.addEventListener('click', closeModal);
-        if (cancelBtn) cancelBtn.addEventListener('click', closeModal);
-        modal.addEventListener('click', (e) => {
-            if (e.target === modal) closeModal();
-        });
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && modal.classList.contains('show')) closeModal();
-        });
+      openBtn.addEventListener('click', openModal);
+      if (closeBtn) closeBtn.addEventListener('click', closeModal);
+      if (cancelBtn) cancelBtn.addEventListener('click', closeModal);
+      modal.addEventListener('click', (e) => {
+          if (e.target === modal) closeModal();
+      });
+      document.addEventListener('keydown', (e) => {
+          if (e.key === 'Escape' && modal.classList.contains('show')) closeModal();
+      });
 
-        if (form) {
-            form.addEventListener('submit', function(e) {
-                
-                const submitBtn = this.querySelector('button[type="submit"]');
-                if (!submitBtn) return;
-                
-                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Создание...';
-                submitBtn.disabled = true;
-                submitBtn.style.opacity = '0.85';
+      if (form) {
+          form.addEventListener('submit', function(e) {
+              
+              const submitBtn = this.querySelector('button[type="submit"]');
+              if (!submitBtn) return;
+              
+              submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Создание...';
+              submitBtn.disabled = true;
+              submitBtn.style.opacity = '0.85';
 
-                e.preventDefault();
-                setTimeout(() => {
-                        this.submit();    
-                        closeModal();
-                        submitBtn.innerHTML = submitBtn.innerHTML.includes('Группу') 
-                            ? '<i class="fas fa-plus"></i> Создать группу' 
-                            : '<i class="fas fa-plus"></i> Создать задачу';
-                        submitBtn.disabled = false;
-                        submitBtn.style.opacity = '1';
-                        if (successMessage) showNotification(successMessage, 'success');
-                }, 1500);
             });
         }
     }
 
-    function showNotification(message, type = 'info') {
-        if (document.getElementById('notification-styles')) {
-            document.getElementById('notification-styles').remove();
-        }
-        
-        const style = document.createElement('style');
-        style.id = 'notification-styles';
-        style.textContent = `
-            .notification {
-                position: fixed;
-                top: 20px;
-                right: 20px;
-                z-index: 9999;
-                background: var(--glass-bg);
-                border: 1px solid var(--glass-border);
-                backdrop-filter: blur(10px);
-                border-radius: var(--radius-md);
-                padding: 1rem 1.5rem;
-                display: flex;
-                align-items: center;
-                gap: 0.8rem;
-                box-shadow: var(--shadow-lg);
-                opacity: 0;
-                transform: translateY(-20px);
-                transition: var(--transition);
-                min-width: 280px;
-            }
-            .notification.success { border-left: 4px solid var(--success); }
-            .notification.error { border-left: 4px solid var(--danger); }
-            .notification.info { border-left: 4px solid var(--primary); }
-            .notification-content { display: flex; align-items: center; gap: 0.8rem; color: white; }
-            .notification i { font-size: 1.2rem; }
-            .notification.success i { color: var(--success); }
-            .notification.error i { color: var(--danger); }
-            .notification.info i { color: var(--primary); }
-        `;
-        document.head.appendChild(style);
+  function showNotification(message, type = 'info') {
+      if (document.getElementById('notification-styles')) {
+          document.getElementById('notification-styles').remove();
+      }
+      
+      const style = document.createElement('style');
+      style.id = 'notification-styles';
+      style.textContent = `
+          .notification {
+              position: fixed;
+              top: 20px;
+              right: 20px;
+              z-index: 9999;
+              background: var(--glass-bg);
+              border: 1px solid var(--glass-border);
+              backdrop-filter: blur(10px);
+              border-radius: var(--radius-md);
+              padding: 1rem 1.5rem;
+              display: flex;
+              align-items: center;
+              gap: 0.8rem;
+              box-shadow: var(--shadow-lg);
+              opacity: 0;
+              transform: translateY(-20px);
+              transition: var(--transition);
+              min-width: 280px;
+          }
+          .notification.success { border-left: 4px solid var(--success); }
+          .notification.error { border-left: 4px solid var(--danger); }
+          .notification.info { border-left: 4px solid var(--primary); }
+          .notification-content { display: flex; align-items: center; gap: 0.8rem; color: white; }
+          .notification i { font-size: 1.2rem; }
+          .notification.success i { color: var(--success); }
+          .notification.error i { color: var(--danger); }
+          .notification.info i { color: var(--primary); }
+      `;
+      document.head.appendChild(style);
 
-        const notification = document.createElement('div');
-        notification.className = `notification ${type}`;
-        notification.innerHTML = `
-            <div class="notification-content">
-                <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'}"></i>
-                <span>${message}</span>
-            </div>
-        `;
-        document.body.appendChild(notification);
-        
-        setTimeout(() => {
-            notification.style.opacity = '1';
-            notification.style.transform = 'translateY(0)';
-        }, 10);
-        
-        setTimeout(() => {
-            notification.style.opacity = '0';
-            notification.style.transform = 'translateY(-20px)';
-            setTimeout(() => {
-                document.body.removeChild(notification);
-                document.head.removeChild(style);
-            }, 300);
-        }, 3000);
-    }
+      const notification = document.createElement('div');
+      notification.className = `notification ${type}`;
+      notification.innerHTML = `
+          <div class="notification-content">
+              <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'}"></i>
+              <span>${message}</span>
+          </div>
+      `;
+      document.body.appendChild(notification);
+      
+      setTimeout(() => {
+          notification.style.opacity = '1';
+          notification.style.transform = 'translateY(0)';
+      }, 10);
+      
+      setTimeout(() => {
+          notification.style.opacity = '0';
+          notification.style.transform = 'translateY(-20px)';
+          setTimeout(() => {
+              document.body.removeChild(notification);
+              document.head.removeChild(style);
+          }, 300);
+      }, 3000);
+  }
 
     class TaskCalendar {
         constructor() {
             this.currentDate = new Date();
             this.currentView = 'month';
-            this.tasks = this.loadTasks();
             this.init();
         }
 
@@ -270,6 +396,74 @@ document.addEventListener('DOMContentLoaded', () => {
             if (this.elements.nextBtn) {
                 this.elements.nextBtn.addEventListener('click', () => this.changeMonth(1));
             }
+            if (this.elements.completeTaskBtn) {
+                this.elements.completeTaskBtn.addEventListener('click', async () => { 
+                    if (!currentTaskId) return;
+
+                    const btn = this.elements.completeTaskBtn;
+                    btn.disabled = true;
+                    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+                    try {
+                        const response = await fetch(`/toggle-task/${currentTaskId}/`, {
+                            method: 'POST',
+                            headers: {
+                                'X-CSRFToken': getCookie('csrftoken'), 
+                                'X-Requested-With': 'XMLHttpRequest'
+                            }
+                        });
+
+                        const data = await response.json();
+                        if (data.ok) {
+                            location.reload();
+                        } else {
+                            alert('Ошибка сервера');
+                        }
+                    } catch (error) {
+                        console.error('Ошибка:', error);
+                    } finally {
+                        btn.disabled = false;
+                    }
+                });
+            }
+            if (this.elements.editTaskBtn) {
+                this.elements.editTaskBtn.addEventListener('click', async () => {
+                    try {
+                        const response = await fetch(`/tasks/edit/${currentTaskId}/`, {
+                            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                        });
+                        const taskData = await response.json();
+
+                        
+                        document.getElementById('taskDetailsModal').classList.remove('show');
+
+                        
+                        const taskModal = document.getElementById('taskModal');
+                        const form = document.getElementById('taskForm');
+                        
+                        
+                        form.action = `/tasks/edit/${currentTaskId}/`;
+
+                        form.querySelector('[name="title"]').value = taskData.title;
+                        form.querySelector('[name="description"]').value = taskData.description;
+                        form.querySelector('[name="discipline"]').value = taskData.discipline;
+                        form.querySelector('[name="deadline"]').value = taskData.deadline;
+                        form.querySelector('[name="points"]').value = taskData.points;
+                        form.querySelector('[name="group"]').value = taskData.group;
+
+                        
+                        taskModal.querySelector('h3').innerHTML = '<i class="fas fa-edit"></i> Редактирование задачи';
+                        form.querySelector('button[type="submit"]').textContent = "Сохранить изменения";
+
+                        
+                        taskModal.classList.add('show');
+                        
+                    } catch (error) {
+                        console.error('Ошибка:', error);
+                        alert('Не удалось загрузить данные задачи');
+                    }
+                });
+            }
             this.elements.viewButtons.forEach(btn => {
                 btn.addEventListener('click', () => {
                     this.elements.viewButtons.forEach(b => b.classList.remove('active'));
@@ -278,31 +472,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     this.renderCalendar();
                 });
             });
-            if (this.elements.closeTaskDetails) {
-                this.elements.closeTaskDetails.addEventListener('click', () => this.hideTaskDetails());
-            }
-            if (this.elements.taskDetailsModal) {
-                this.elements.taskDetailsModal.addEventListener('click', (e) => {
-                    if (e.target === this.elements.taskDetailsModal) this.hideTaskDetails();
-                });
-            }
-            document.addEventListener('keydown', (e) => {
-                if (e.key === 'Escape' && this.elements.taskDetailsModal?.classList.contains('show')) {
-                    this.hideTaskDetails();
-                }
-            });
-            if (this.elements.completeTaskBtn) {
-                this.elements.completeTaskBtn.addEventListener('click', () => {
-                    showNotification('Задача успешно выполнена!', 'success');
-                    this.hideTaskDetails();
-                    this.renderCalendar();
-                });
-            }
-            if (this.elements.editTaskBtn) {
-                this.elements.editTaskBtn.addEventListener('click', () => {
-                    showNotification('Редактирование задачи скоро будет доступно!', 'info');
-                });
-            }
         }
 
         async loadTasks(startDate = null, endDate = null) {
@@ -316,7 +485,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const startParam = startDate.toISOString().split('T')[0];
                 const endParam = endDate.toISOString().split('T')[0];
                 
-                const response = await fetch(`/api/calendar-tasks/?start=${startParam}&end=${endParam}`);
+                const response = await fetch(`/api/tasks/?start=${startParam}&end=${endParam}`);
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
@@ -617,15 +786,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
             `;
             
-            if (this.elements.completeTaskBtn) {
-                if (task.isCompleted) {
-                    this.elements.completeTaskBtn.disabled = true;
-                    this.elements.completeTaskBtn.innerHTML = '<i class="fas fa-check"></i> Выполнено';
-                } else {
-                    this.elements.completeTaskBtn.disabled = false;
-                    this.elements.completeTaskBtn.innerHTML = '<i class="fas fa-check"></i> Выполнить';
-                }
-            }
+            // if (this.elements.completeTaskBtn) {
+            //     if (task.isCompleted) {
+            //         this.elements.completeTaskBtn.disabled = true;
+            //         this.elements.completeTaskBtn.innerHTML = '<i class="fas fa-check"></i> Выполнено';
+            //     } else {
+            //         this.elements.completeTaskBtn.disabled = false;
+            //         this.elements.completeTaskBtn.innerHTML = '<i class="fas fa-check"></i> Выполнить';
+            //     }
+            // }
         }
 
         renderMultipleTasks(date, tasks) {
@@ -706,4 +875,5 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
     }
+
 });

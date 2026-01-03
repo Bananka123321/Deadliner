@@ -41,56 +41,54 @@
       </div>
     </div>
   </aside>
+
   <main class="main-content">
     <header class="page-header">
       <h1>Добро пожаловать, <span class="highlight">{{ user.username }}</span></h1>
       <p class="subtitle">Ваш персональный менеджер задач</p>
     </header>
 
-    <!--СЕКЦИЯ СТАТИСТИКИ-->
     <div class="stats-grid">
-      <div class="stat-card neon-success">
-          <div class="stat-icon">📊</div>
-          <div class="stat-details">
-              <span class="stat-label">Прогресс задач</span>
-              <span class="stat-value">{{ progress_percent }}%</span>
-              <div class="stat-progress-bar">
-                  <div class="stat-progress-fill" style="width: {{ progress_percent }}%"></div>
-              </div>
-          </div>
-      </div>
+        <div class="stat-card neon-success">
+            <div class="stat-icon">📊</div>
+            <div class="stat-details">
+                <span class="stat-label">Прогресс задач</span>
+                <span class="stat-value">{{ progress_percent }}%</span>
+                <div class="stat-progress-bar">
+                    <div class="stat-progress-fill" style="width: {{ progress_percent }}%"></div>
+                </div>
+            </div>
+        </div>
 
-      <div class="stat-card rank-highlight">
-          <div class="stat-icon">🏆</div>
-          <div class="stat-details">
-              <span class="stat-label">Место в рейтинге</span>
-              <span class="stat-value">#{{ rank }}</span>
-              <span class="subtitle">среди всех юзеров</span>
-          </div>
-      </div>
+        <div class="stat-card rank-highlight">
+            <div class="stat-icon">🏆</div>
+            <div class="stat-details">
+                <span class="stat-label">Место в рейтинге</span>
+                <span class="stat-value">#{{ rank }}</span>
+                <span class="subtitle">среди всех юзеров</span>
+            </div>
+        </div>
 
-      <div class="stat-card neon-streak">
-          <div class="stat-icon">🔥</div>
-          <div class="stat-details">
-              <span class="stat-label">Стрик дней</span>
-              <span class="stat-value">{{ current_streak }}</span>
-          </div>
-      </div>
+        <div class="stat-card neon-streak">
+            <div class="stat-icon">🔥</div>
+            <div class="stat-details">
+                <span class="stat-label">Стрик дней</span>
+                <span class="stat-value">{{ current_streak }}</span>
+            </div>
+        </div>
 
-      <div class="stat-card neon-warning">
-          <div class="stat-icon">⏳</div>
-          <div class="stat-details">
-              <span class="stat-label">Нужно сделать</span>
-              <span class="stat-value">{{ total_pending }}</span>
-          </div>
-      </div>
+        <div class="stat-card neon-warning">
+            <div class="stat-icon">⏳</div>
+            <div class="stat-details">
+                <span class="stat-label">Нужно сделать</span>
+                <span class="stat-value">{{ total_pending }}</span>
+            </div>
+        </div>
     </div>
 
-    <!--Контейнер для секций-->
     <div class="content-container">
-      <!--Секция ГРУПП-->
       <section id="groups-section" class="content-section active">
-        <div class="section-wrapper">
+        <div class="tasks-section">
           <div class="section-header">
             <h2>Ваши группы</h2>
             <div class="actions">
@@ -109,19 +107,26 @@
               </div>
               <div class="tasks-list">
                 {% for task in tasks %}
-                <div class="task-item">
-                  <div class="task-content">
-                    <div class="task-title">{{ task.title }}</div>
-                    <div class="task-meta">
-                      {% if task.discipline %}
-                        <span class="discipline">{{ task.discipline }}</span>
-                      {% endif %}
-                      {% if task.deadline %}
-                        <span class="deadline">до {{ task.deadline|date:"d.m.Y" }}</span>
-                      {% endif %}
+                  <div class="task-item list-task-item" 
+                      data-id="{{ task.id }}"
+                      data-title="{{ task.title }}"
+                      data-description="{{ task.description|default:'' }}"
+                      data-discipline="{{ task.discipline|default:'' }}"
+                      data-deadline="{{ task.deadline|date:'c' }}"
+                      data-group="{{ group.name }}"
+                      data-points="{{ task.points }}">
+                    <div class="task-content">
+                      <div class="task-title">{{ task.title }}</div>
+                      <div class="task-meta">
+                        {% if task.discipline %}
+                          <span class="discipline">{{ task.discipline }}</span>
+                        {% endif %}
+                        {% if task.deadline %}
+                          <span class="deadline">до {{ task.deadline|date:"d.m.Y" }}</span>
+                        {% endif %}
+                      </div>
                     </div>
                   </div>
-                </div>
                 {% endfor %}
               </div>
             </div>
@@ -136,9 +141,8 @@
         </div>
       </section>
 
-      <!-- Секция ЗАДАЧ -->
       <section id="tasks-section" class="content-section">
-        <div class="section-wrapper">
+        <div class="tasks-section">
           <div class="section-header">
             <h2>Все задачи</h2>
             <div class="actions">
@@ -151,7 +155,14 @@
           <div class="tasks-list-full">
             {% for group, tasks in group_tasks.items %}
               {% for task in tasks %}
-              <div class="task-item">
+              <div class="task-item list-task-item" 
+                  data-id="{{ task.id }}"
+                  data-title="{{ task.title }}"
+                  data-description="{{ task.description|default:'' }}"
+                  data-discipline="{{ task.discipline|default:'' }}"
+                  data-deadline="{{ task.deadline|date:'c' }}"
+                  data-group="{{ group.name }}"
+                  data-points="{{ task.points }}">
                 <div class="task-content">
                   <div class="task-title">{{ task.title }}</div>
                   <div class="task-meta">
@@ -161,7 +172,6 @@
                     {% if task.deadline %}
                       <span class="deadline">до {{ task.deadline|date:"d.m.Y" }}</span>
                     {% endif %}
-                    <span class="group">{{ group.name }}</span>
                   </div>
                 </div>
               </div>
@@ -177,26 +187,17 @@
         </div>
       </section>
 
-      <!--Секция КАЛЕНДАРЬ-->
       <section id="calendar-section" class="content-section">
-        <div class="section-wrapper">
+        <div class="calendar-section">
           <div class="section-header">
             <h2><i class="fas fa-calendar-alt me-2"></i> Календарь задач</h2>
             <div class="calendar-controls">
-              <button class="calendar-btn" id="prevBtn">
-                <i class="fas fa-chevron-left"></i>
-              </button>
+              <button class="calendar-btn" id="prevBtn"><i class="fas fa-chevron-left"></i></button>
               <h3 id="currentMonthYear" class="current-period">Июнь 2026</h3>
-              <button class="calendar-btn" id="nextBtn">
-                <i class="fas fa-chevron-right"></i>
-              </button>
+              <button class="calendar-btn" id="nextBtn"><i class="fas fa-chevron-right"></i></button>
               <div class="view-toggle">
-                <button class="view-btn active" data-view="month">
-                  <i class="fas fa-calendar-week"></i> Месяц
-                </button>
-                <button class="view-btn" data-view="week">
-                  <i class="fas fa-calendar-day"></i> Неделя
-                </button>
+                <button class="view-btn active" data-view="month"><i class="fas fa-calendar-week"></i> Месяц</button>
+                <button class="view-btn" data-view="week"><i class="fas fa-calendar-day"></i> Неделя</button>
               </div>
             </div>
           </div>
@@ -212,47 +213,14 @@
               <div class="calendar-day-header weekend">Вс</div>
             </div>
             <div id="calendar-grid" class="calendar-grid">
-              <!-- Дни календаря будут генерироваться здесь -->
-            </div>
-          </div>
-          
-          <div class="task-details-modal" id="taskDetailsModal">
-            <div class="modal-content">
-              <div class="modal-header">
-                <h3 id="taskTitle">Детали задачи</h3>
-                <button class="modal-close" id="closeTaskDetails">&times;</button>
               </div>
-              <div class="modal-body" id="taskDetailsContent">
-                <!-- Содержимое будет заполнено динамически -->
-              </div>
-              <div class="modal-footer">
-                <button class="btn-secondary" id="editTaskBtn">
-                  <i class="fas fa-edit"></i> Изменить
-                </button>
-                <button class="btn-primary" id="completeTaskBtn">
-                  <i class="fas fa-check"></i> Выполнить
-                </button>
-              </div>
-            </div>
           </div>
           
           <div class="legend-container">
-            <div class="legend-item">
-              <div class="legend-color personal"></div>
-              <span>Личные задачи</span>
-            </div>
-            <div class="legend-item">
-              <div class="legend-color group"></div>
-              <span>Групповые задачи</span>
-            </div>
-            <div class="legend-item">
-              <div class="legend-color completed"></div>
-              <span>Выполнено</span>
-            </div>
-            <div class="legend-item">
-              <div class="legend-color today"></div>
-              <span>Сегодня</span>
-            </div>
+            <div class="legend-item"><div class="legend-color personal"></div><span>Личные задачи</span></div>
+            <div class="legend-item"><div class="legend-color group"></div><span>Групповые задачи</span></div>
+            <div class="legend-item"><div class="legend-color completed"></div><span>Выполнено</span></div>
+            <div class="legend-item"><div class="legend-color today"></div><span>Сегодня</span></div>
           </div>
         </div>
       </section>
@@ -260,11 +228,94 @@
   </main>
 </div>
 
-<!--МОДАЛЬНОЕ ОКНО ДЛЯ СОЗДАНИЯ ГРУПП-->
+<div class="task-details-modal" id="taskDetailsModal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 id="taskTitle">Детали задачи</h3>
+      <button class="modal-close" id="closeTaskDetails">&times;</button>
+    </div>
+    <div class="modal-body" id="taskDetailsContent">
+      </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" id="editTaskBtn">
+        <i class="fas fa-edit"></i> Изменить
+      </button>
+      <button class="btn-primary" id="completeTaskBtn">
+        <i class="fas fa-check"></i> Выполнить
+      </button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-overlay group-modal" id="groupModal">
   <div class="modal-content group-modal">
     <div class="modal-header">
       <h3><i class="fas fa-layer-group"></i> Новая группа</h3>
+      <button class="modal-close" id="closeGroupModal">&times;</button>
+    </div>
+    <form method="post" action="{% url 'create_group' %}" id="groupForm">
+      {% csrf_token %}
+      <div class="form-group">
+        <label for="id_name"><i class="fas fa-heading"></i> Название группы</label>
+        <input type="text" name="name" class="form-control" id="id_name" required>
+        <div class="help-text">Краткое название для вашей группы задач</div>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn-secondary" id="cancelGroupModal"><i class="fas fa-times"></i> Отмена</button>
+        <button type="submit" class="btn-primary"><i class="fas fa-plus"></i> Создать группу</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="modal-overlay task-modal" id="taskModal">
+  <div class="modal-content task-modal">
+    <div class="modal-header">
+      <h3><i class="fas fa-tasks"></i> Новая задача</h3>
+      <button class="modal-close" id="closeTaskModal">&times;</button>
+    </div>
+    <form method="post" action="{% url 'create_task' %}" id="taskForm">
+      {% csrf_token %}
+      <div class="form-group">
+        <label for="{{ task_form.title.id_for_label }}"><i class="fas fa-heading"></i> Название</label>
+        {{ task_form.title }}
+        {% if task_form.title.errors %}<div class="errorlist">{{ task_form.title.errors }}</div>{% endif %}
+        <div class="help-text">Краткое описание основной цели задачи</div>
+      </div>
+      <div class="form-group">
+        <label for="{{ task_form.description.id_for_label }}"><i class="fas fa-align-left"></i> Описание</label>
+        {{ task_form.description }}
+      </div>
+      <div class="form-group">
+        <label for="{{ task_form.discipline.id_for_label }}"><i class="fas fa-book"></i> Дисциплина</label>
+        {{ task_form.discipline }}
+      </div>
+      <div class="form-group">
+        <label for="{{ task_form.deadline.id_for_label }}"><i class="fas fa-calendar-check"></i> Срок выполнения</label>
+        {{ task_form.deadline }}
+        <div class="help-text">Укажите дату в формате ГГГГ-ММ-ДД</div>
+      </div>
+      <div class="form-group">
+        <label for="{{ task_form.group.id_for_label }}"><i class="fas fa-layer-group"></i> Группа</label>
+        {{ task_form.group }}
+      </div>
+      <div class="form-group">
+        <label for="{{ task_form.points.id_for_label }}"><i class="fas fa-star"></i> Баллы за выполнение</label>
+        {{ task_form.points }}
+        <div class="help-text">Сколько баллов получит пользователь за выполнение</div>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn-secondary" id="cancelTaskModal"><i class="fas fa-times"></i> Отмена</button>
+        <button type="submit" class="btn-primary"><i class="fas fa-plus"></i> Создать задачу</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="modal-overlay group-modal" id="groupModal">
+  <div class="modal-content group-modal">
+    <div class="modal-header">
+      <h3><i class="fas fa-users"></i> Новая группа</h3>
       <button class="modal-close" id="closeGroupModal">&times;</button>
     </div>
 
@@ -272,94 +323,20 @@
       {% csrf_token %}
 
       <div class="form-group">
-        <label for="id_name"><i class="fas fa-heading"></i> Название группы</label>
-        <input type="text" name="name" class="form-control" id="id_name" required>
-        <div class="help-text">Краткое название для вашей группы задач</div>
+        <label for="{{ group_form.name.id_for_label }}"><i class="fas fa-tag"></i> Название группы</label>
+        {{ group_form.name }}
+        {% if group_form.name.errors %}
+          <div class="errorlist">{{ group_form.name.errors }}</div>
+        {% endif %}
+        <div class="help-text">Например: ИТ-21 или Проект Х</div>
       </div>
 
       <div class="modal-actions">
-        <button type="button" class="btn-secondary" id="cancelGroupModal">
-          <i class="fas fa-times"></i> Отмена
-        </button>
-        <button type="submit" class="btn-primary">
-          <i class="fas fa-plus"></i> Создать группу
-        </button>
+        <button type="button" class="btn-secondary" id="cancelGroupModal">Отмена</button>
+        <button type="submit" class="btn-primary">Создать группу</button>
       </div>
     </form>
   </div>
 </div>
 
-<!--МОДАЛЬНОЕ ОКНО ДЛЯ СОЗДАНИЯ ЗАДАЧ-->
-<div class="modal-overlay task-modal" id="taskModal">
-  <div class="modal-content task-modal">
-    <div class="modal-header">
-      <h3><i class="fas fa-tasks"></i> Новая задача</h3>
-      <button class="modal-close" id="closeTaskModal">&times;</button>
-    </div>
-
-    <form method="post" action="{% url 'create_task' %}" id="taskForm">
-      {% csrf_token %}
-
-      <div class="form-group">
-        <label for="{{ task_form.title.id_for_label }}"><i class="fas fa-heading"></i> Название</label>
-        {{ task_form.title }}
-        {% if task_form.title.errors %}
-          <div class="errorlist">{{ task_form.title.errors }}</div>
-        {% endif %}
-        <div class="help-text">Краткое описание основной цели задачи</div>
-      </div>
-
-      <div class="form-group">
-        <label for="{{ task_form.description.id_for_label }}"><i class="fas fa-align-left"></i> Описание</label>
-        {{ task_form.description }}
-        {% if task_form.description.errors %}
-          <div class="errorlist">{{ task_form.description.errors }}</div>
-        {% endif %}
-      </div>
-
-      <div class="form-group">
-        <label for="{{ task_form.discipline.id_for_label }}"><i class="fas fa-book"></i> Дисциплина</label>
-        {{ task_form.discipline }}
-        {% if task_form.discipline.errors %}
-          <div class="errorlist">{{ task_form.discipline.errors }}</div>
-        {% endif %}
-      </div>
-
-      <div class="form-group">
-        <label for="{{ task_form.deadline.id_for_label }}"><i class="fas fa-calendar-check"></i> Срок выполнения</label>
-        {{ task_form.deadline }}
-        {% if task_form.deadline.errors %}
-          <div class="errorlist">{{ task_form.deadline.errors }}</div>
-        {% endif %}
-        <div class="help-text">Укажите дату в формате ГГГГ-ММ-ДД</div>
-      </div>
-
-      <div class="form-group">
-        <label for="{{ task_form.group.id_for_label }}"><i class="fas fa-layer-group"></i> Группа</label>
-        {{ task_form.group }}
-        {% if task_form.group.errors %}
-          <div class="errorlist">{{ task_form.group.errors }}</div>
-        {% endif %}
-      </div>
-
-      <div class="form-group">
-        <label for="{{ task_form.points.id_for_label }}"><i class="fas fa-star"></i> Баллы за выполнение</label>
-        {{ task_form.points }}
-        {% if task_form.points.errors %}
-          <div class="errorlist">{{ task_form.points.errors }}</div>
-        {% endif %}
-        <div class="help-text">Сколько баллов получит пользователь за выполнение</div>
-      </div>
-
-      <div class="modal-actions">
-        <button type="button" class="btn-secondary" id="cancelTaskModal">
-          <i class="fas fa-times"></i> Отмена
-        </button>
-        <button type="submit" class="btn-primary">
-          <i class="fas fa-plus"></i> Создать задачу
-        </button>
-      </div>
-    </form>
-  </div>
-</div>
 {% endblock %}

@@ -33,5 +33,4 @@ urlpatterns = [
     path('group/<int:group_id>/', task_views.group_detail, name='group_detail'),
     path('tasks/create/', task_views.create_task, name='create_task'),
     path('create/group/', task_views.create_group, name='create_group'),
-    path('api/calendar-tasks/', task_views.get_calendar_tasks, name='calendar_tasks'),
 ]

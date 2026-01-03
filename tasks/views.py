@@ -7,7 +7,8 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from .forms import TaskForm
 from django.contrib import messages
-from django.db.models import Count
+from django.utils import timezone
+from django.views.decorators.http import require_POST
 
 def home(request):
     if request.user.is_authenticated:
@@ -20,12 +21,18 @@ def home_logged(request):
     user = request.user
     groups = user.class_groups.all()
 
-    total_done = UserTask.objects.filter(
-        user=user,
-        status__in=[UserTask.Status.DONE_ON_TIME, UserTask.Status.DONE_LATE]
+    total_done = user.stats.total_done()
+    total_pending = UserTask.objects.filter(
+        user=user, 
+        is_done=False  
     ).count()
-    expired = UserTask.objects.filter(user=user, status=UserTask.Status.EXPIRED).count()
+    
+    total_tasks =  total_done + total_pending
+    progress_percent = round((total_done / total_tasks * 100), 1) if total_tasks > 0 else 0
     current_streak = getattr(user.stats, "streak", 0) if hasattr(user, "stats") else 0
+
+    higher_users_count = UserStats.objects.filter(total_points__gt=user.stats.total_points).count()
+    rank = higher_users_count + 1
 
     group_tasks = {}
     for group in groups:
@@ -33,11 +40,11 @@ def home_logged(request):
         group_tasks[group] = [ut.task for ut in user_tasks]
 
     context = {
-        'user': user,
-        'group_tasks': group_tasks,
-        'total_done': total_done,
-        'expired': expired,
+        'rank': rank,
+        'total_pending': total_pending,
+        'progress_percent': progress_percent,
         'current_streak': current_streak,
+        'group_tasks': group_tasks,
         'task_form': TaskForm(user=user),
     }
 
@@ -238,3 +245,51 @@ def get_calendar_tasks(request):
         })
     
     return JsonResponse(tasks_data, safe=False)
+
+@login_required
+@require_POST
+def toggle_task(request, task_id):
+    user_task = get_object_or_404(UserTask, user=request.user, task_id=task_id)
+    
+    if user_task.status == UserTask.Status.ACTIVE:
+        user_task.status = UserTask.Status.DONE_ON_TIME
+        user_task.is_done = True
+    else:
+        user_task.status = UserTask.Status.ACTIVE
+        user_task.is_done = False
+    
+    user_task.save()
+    
+    if hasattr(request.user, 'stats'):
+        request.user.stats.update_streak()
+        
+    return JsonResponse({'ok': True, 'new_status': user_task.get_status_display()})
+
+@login_required
+def edit_task(request, task_id):
+    task = get_object_or_404(Task, id=task_id)
+    
+    if task.group and request.user not in task.group.members.all():
+        return JsonResponse({'error': 'Нет прав'}, status=403)
+
+    if request.method == 'POST':
+        form = TaskForm(request.POST, instance=task, user=request.user)
+        if form.is_valid():
+            form.save()
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({'ok': True})
+            messages.success(request, "Задача обновлена!")
+            return redirect('home_logged')
+        else:
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({'ok': False, 'errors': form.errors})
+    
+    data = {
+        'title': task.title,
+        'description': task.description,
+        'discipline': task.discipline or '',
+        'deadline': task.deadline.strftime('%Y-%m-%dT%H:%M') if task.deadline else '',
+        'points': task.points,
+        'group': task.group.id if task.group else ''
+    }
+    return JsonResponse(data)

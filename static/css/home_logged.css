@@ -47,15 +47,11 @@ body {
 
 .sidebar {
   width: 280px;
-  flex-shrink: 0;
   background: var(--glass-bg);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border-right: 1px solid var(--glass-border);
-  position: fixed;
-  top: 0;
-  left: 0;
-  height: 100vh;
+  padding: 1.5rem 0;
   display: flex;
   flex-direction: column;
   position: fixed;
@@ -70,7 +66,7 @@ body {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 1.5rem 1.5rem 1.5rem;
+  padding: 0 1.5rem 1.5rem;
   border-bottom: 1px solid var(--glass-border);
   margin-bottom: 1.5rem;
 }
@@ -124,9 +120,9 @@ body {
 }
 
 .sidebar-footer {
+  margin-top: auto;
   padding: 1.5rem;
   border-top: 1px solid var(--glass-border);
-  width: 100%;
 }
 
 .user-info {
@@ -189,9 +185,7 @@ body {
   flex: 1;
   margin-left: 280px;
   padding: 2.5rem;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
+  transition: var(--transition);
 }
 
 .page-header {
@@ -308,6 +302,10 @@ body {
   font-size: 1.8rem;
   font-weight: 800;
   color: white;
+}
+
+.tasks-section {
+  margin-top: 1.5rem;
 }
 
 .section-header {
@@ -701,6 +699,7 @@ textarea.form-control {
   }
   
   .sidebar {
+    position: fixed;
     left: -280px;
     transition: left 0.3s ease;
   }
@@ -728,18 +727,6 @@ textarea.form-control {
   }
 }
 
-@media (max-width: 992px) {
-  .sidebar {
-    width: 240px;
-    transform: translateX(0);
-    transition: transform 0.3s ease, width 0.3s ease;
-  }
-  
-  .main-content {
-    margin-left: 240px;
-  }
-}
-
 @media (max-width: 600px) {
   .modal-content.task-modal {
     width: 95%;
@@ -760,32 +747,6 @@ textarea.form-control {
     justify-content: center;
   }
 
-}
-@media (max-height: 700px) {
-  .sidebar {
-    height: 100vh;
-    padding-bottom: 60px;
-  }
-  
-  .menu ul {
-    overflow-y: auto;
-    max-height: calc(100vh - 200px);
-    padding-right: 4px;
-  }
-  
-  .menu ul::-webkit-scrollbar {
-    width: 4px;
-  }
-  
-  .menu ul::-webkit-scrollbar-track {
-    background: rgba(0,0,0,0.1);
-    border-radius: 2px;
-  }
-  
-  .menu ul::-webkit-scrollbar-thumb {
-    background: rgba(99, 102, 241, 0.5);
-    border-radius: 2px;
-  }
 }
 
 input[type="text"],
@@ -868,16 +829,6 @@ ul.errorlist li {
 
 .content-section.active {
   display: block;
-}
-
-.section-wrapper {
-  padding: 0 0 2rem 0;
-  max-width: 1400px;
-  margin: 0 auto;
-  width: 100%;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
 }
 
 @keyframes fadeIn {
@@ -1214,6 +1165,10 @@ textarea.form-control {
 }
 
 /* === Стили для календаря === */
+.calendar-section {
+  animation: fadeIn 0.4s ease;
+}
+
 .section-header {
   display: flex;
   justify-content: space-between;

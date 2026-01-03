@@ -19,4 +19,5 @@ urlpatterns = [
     path('groups/create/', views.create_group, name='create_group'), 
     
     path('toggle-task/<int:task_id>/', views.toggle_task, name='toggle_task'),
+    path('tasks/edit/<int:task_id>/', views.edit_task, name='edit_task'),  
 ]
