@@ -319,6 +319,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const response = await fetch(`/api/calendar-tasks/?start=${startParam}&end=${endParam}`);
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
+                    
                 }
                 
                 const data = await response.json();
