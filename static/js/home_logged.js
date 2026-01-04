@@ -87,26 +87,17 @@ document.addEventListener('DOMContentLoaded', () => {
     function closeAnyModal(modal) {
         if (!modal || !modal.classList.contains('show')) return;
 
-        const formGroups = modal.querySelectorAll('.form-group');
-        if (formGroups.length > 0) {
-            formGroups.forEach((group, index) => {
-                setTimeout(() => {
-                    group.style.opacity = '0';
-                    group.style.transform = 'translateY(10px)';
-                }, index * 30);
-            });
+        const modalContent = modal.querySelector('.modal-content');
+        if (modalContent) {
+            modalContent.classList.remove('show');
         }
 
-        const delay = formGroups.length > 0 ? 300 : 0;
+        modal.classList.remove('show');
+        document.body.style.overflow = 'auto';
 
-        setTimeout(() => {
-            modal.classList.remove('show');
-            document.body.style.overflow = 'auto';
-
-            const form = modal.querySelector('form');
-            if (form) form.reset();
-        }, delay);
-    }
+        const form = modal.querySelector('form');
+        if (form) form.reset();
+        }
 
     document.addEventListener('keydown', (e) => {
         if (e.key === "Escape") {
@@ -315,48 +306,47 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function setupModal(modal, openBtn, closeBtn, cancelBtn, form, successMessage) {
         if (!modal) return;
-        
-        const formGroups = modal.querySelectorAll('.form-group');
 
+        const modalContent = modal.querySelector('.modal-content');
 
         const openModal = () => {
-            formGroups.forEach(group => {
-                group.style.opacity = '0';
-                group.style.transform = 'translateY(10px)';
-                group.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
-            });
+            if (form) form.reset();
 
             modal.classList.add('show');
+            if (modalContent) modalContent.classList.add('show');
             document.body.style.overflow = 'hidden';
 
+            const formGroups = modal.querySelectorAll('.form-group');
+            formGroups.forEach((group, index) => {
+            group.style.opacity = '0';
+            group.style.transform = 'translateY(10px)';
             setTimeout(() => {
-                formGroups.forEach((group, index) => {
-                    setTimeout(() => {
-                        group.style.opacity = '1';
-                        group.style.transform = 'translateY(0)';
-                    }, 100 + (index * 70));
-                });
-            }, 100);
+                group.style.opacity = '1';
+                group.style.transform = 'translateY(0)';
+            }, 100 + index * 70);
+            });
         };
 
         if (openBtn) {
             openBtn.addEventListener('click', openModal);
         }
 
+        [closeBtn, cancelBtn].forEach(btn => {
+            if (btn) {
+            btn.addEventListener('click', () => closeAnyModal(modal));
+            }
+        });
 
         if (form) {
             form.addEventListener('submit', function(e) {
-                
-                const submitBtn = this.querySelector('button[type="submit"]');
-                if (!submitBtn) return;
-                
-                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Создание...';
+            const submitBtn = this.querySelector('button[type="submit"]');
+            if (submitBtn) {
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Сохранение...';
                 submitBtn.disabled = true;
-                submitBtn.style.opacity = '0.85';
-
-                });
+            }
+            });
         }
-    }
+        }
 
     function showNotification(message, type = 'info') {
         if (document.getElementById('notification-styles')) {
@@ -447,18 +437,30 @@ document.addEventListener('DOMContentLoaded', () => {
     function openEditTaskModal(taskData) {
         closeAnyModal(elements.taskDetailsModal);
 
+        const modal = elements.taskModal;
+        const modalContent = modal.querySelector('.modal-content.task-modal');
         const form = elements.taskForm;
 
         form.action = `/tasks/edit/${taskData.id}`;
 
-        form.querySelector('[name="title"]').value = taskData.title;
-        form.querySelector('[name="description"]').value = taskData.description;
-        form.querySelector('[name="deadline"').value = taskData.deadline;
+        form.querySelector('[name="title"]').value = taskData.title || '';
+        form.querySelector('[name="description"]').value = taskData.description || '';
+        form.querySelector('[name="discipline"]').value = taskData.discipline || '';
+        form.querySelector('[name="deadline"]').value = taskData.deadline ? taskData.deadline.split('T')[0] : '';
+        form.querySelector('[name="points"]').value = taskData.points || '';
+        if (taskData.group) {
+            form.querySelector('[name="group"]').value = taskData.group;
+        }
 
-        const submitBtn = form.querySelector('button[type="submit"]');
-        submitBtn.innerHTML = '<i class="fas fa-save"></i> Сохранить изменения';
+        modal.querySelector('.modal-header h3').innerHTML = '<i class="fas fa-edit"></i> Редактирование задачи';
+        form.querySelector('button[type="submit"]').innerHTML = '<i class="fas fa-save"></i> Сохранить изменения';
 
-        elements.taskModal.classList.add('show');
+        modal.classList.add('show');
+        document.body.style.overflow = 'hidden';
+
+        if (modalContent) {
+            modalContent.classList.add('show');
+        }
     }
 
     document.getElementById('completeTaskBtn').addEventListener('click', () => {
