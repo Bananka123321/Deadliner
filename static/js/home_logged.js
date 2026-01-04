@@ -11,6 +11,8 @@ document.addEventListener('DOMContentLoaded', () => {
         cancelTaskBtn: document.getElementById('cancelTaskModal'),
         taskForm: document.getElementById('taskForm'),
 
+        completeTaskBtn: document.getElementById('completeTaskBtn'),
+        editTaskBtn: document.getElementById('editTaskBtn'),
         taskDetailsModal: document.getElementById('taskDetailsModal'),
         closeTaskDetails: document.getElementById('closeTaskDetails'),
         taskTitle: document.getElementById('taskTitle'),
@@ -135,34 +137,25 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     })
 
-    function openTaskActionModal(data) {
-        currentTaskId = data.id;
-        const modal = document.getElementById('taskDetailsModal');
-        
-        document.getElementById('taskTitle').textContent = data.title;
-        
-         
-        const date = new Date(data.deadline);
-        const dateStr = date.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+    function resetTaskModalToDefault() {
+        const form = elements.taskForm;
+        const modal = elements.taskModal;
+        if (!form || !modal) return;
 
-        document.getElementById('taskDetailsContent').innerHTML = `
-            <div class="task-detail-row"><strong>Срок:</strong> ${dateStr}</div>
-            <div class="task-detail-row"><strong>Группа:</strong> ${data.group}</div>
-            <div class="task-detail-row"><strong>Баллы:</strong> ${data.points}</div>
-            <div class="task-detail-row"><strong>Описание:</strong><br>${data.description || 'Нет описания'}</div>
-        `;
+        const titleH3 = modal.querySelector('h3');
+        if (titleH3) titleH3.innerHTML = '<i class="fas fa-tasks"></i> Новая задача';
 
-        modal.classList.add('show');
-        document.body.style.overflow = 'hidden';
-    }
+        form.action = "/tasks/create/"; 
 
-    document.addEventListener('click', (e) => {
-        const taskItem = e.target.closest('.list-task-item');
-        if (taskItem) {
-            e.stopPropagation();
-            openTaskActionModal(taskItem.dataset);
+        const submitBtn = form.querySelector('button[type="submit"]');
+        if (submitBtn) {
+            submitBtn.innerHTML = '<i class="fas fa-plus"></i> Создать задачу';
+            submitBtn.disabled = false;
+            submitBtn.style.opacity = '1';
         }
-    });
+
+        form.reset();
+    }   
 
     function getCookie(name) {
         let cookieValue = null;
@@ -180,6 +173,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function openTaskModalFromList(taskElement) {
+        console.log("1111111111111111111111111111");
         const data = taskElement.dataset;
         currentTaskId = data.id;
 
@@ -224,11 +218,12 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
         `;
 
+
          
-        elements.completeTaskBtn.innerHTML = '<i class="fas fa-check"></i> Выполнить';
-        elements.completeTaskBtn.disabled = false;
-        elements.completeTaskBtn.classList.remove('btn-secondary');
-        elements.completeTaskBtn.classList.add('btn-primary');
+        // elements.completeTaskBtn.innerHTML = '<i class="fas fa-check"></i> Выполнить';
+        // elements.completeTaskBtn.disabled = false;
+        // elements.completeTaskBtn.classList.remove('btn-secondary');
+        // elements.completeTaskBtn.classList.add('btn-primary');
 
         elements.taskDetailsModal.classList.add('show');
         document.body.style.overflow = 'hidden';
@@ -269,21 +264,20 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     function openCommonTaskModal(date = null) {
+        console.log("poroms")
         const modal = elements.taskModal;
         const form = elements.taskForm;
 
-        form.reset();
+        resetTaskModalToDefault();
 
-        const dateField = form.querySelector('[name="deadline"]');
-        if (dateField) {
-            if (date) {
-                const year = date.getFullYear();
-                const month = String(date.getMonth() + 1).padStart(2, '0');
-                const day = String(date.getDate()).padStart(2, '0');
-                dateField.value = `${year}-${month}-${day}`;
-            } else {
-                dateField.value = '';
-            }
+        if (date) {
+            const dateField = form.querySelector('[name="deadline"]');
+            if (dateField) {
+                    const year = date.getFullYear();
+                    const month = String(date.getMonth() + 1).padStart(2, '0');
+                    const day = String(date.getDate()).padStart(2, '0');
+                    dateField.value = `${year}-${month}-${day}`;
+                }
         }
         modal.classList.add('show');
         document.body.style.overflow = 'hidden';
@@ -318,6 +312,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         const formGroups = modal.querySelectorAll('.form-group');
 
+        console.log("llllll")
 
         const openModal = () => {
             formGroups.forEach(group => {
@@ -342,7 +337,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (openBtn) {
             openBtn.addEventListener('click', openModal);
         }
-
 
         if (form) {
             form.addEventListener('submit', function(e) {
@@ -421,26 +415,42 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 3000);
     }
 
+    document.getElementById('completeTaskBtn').addEventListener('click', () => {
+        console.log("click2");
+        if (currentTaskId) {
+            completeTask(currentTaskId);
+        }
+    });
+
     async function completeTask(taskId) {
-                if (!confirm('Пометить задачу как выполненную')) return;
+                console.log("click2");
+                // if (!confirm('Пометить задачу как выполненную')) return;
+
+                console.log("123123123")
+
+                const btn = elements.completeTaskBtn;
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
 
                 try {
-                    const response = await fetch(`/tasks/complete/${taskId}/`, {
+                    const response = await fetch(`/toggle-task/${currentTaskId}/`, {
                         method: 'POST',
                         headers: {
-                            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value, 
+                            'X-CSRFToken': getCookie('csrftoken'), 
+                            'X-Requested-With': 'XMLHttpRequest'
                         }
                     });
 
-                    if (response.ok) {
-                        showNotification('Задача выполнена!', 'success');
-                        closeAnyModal(elements.taskDetailsModal);
-
-                        setTimeout(() => location.reload(), 500);
+                    const data = await response.json();
+                    if (data.ok) {
+                        location.reload();
+                    } else {
+                        alert('Ошибка сервера');
                     }
                 } catch (error) {
-                    console.error('Ошибка ;', error);
-                    showNotification('Не удалось выполнить задачу', 'error');
+                    console.error('Ошибка:', error);
+                } finally {
+                    btn.disabled = false;
                 }
             }
 
@@ -448,22 +458,27 @@ document.addEventListener('DOMContentLoaded', () => {
         closeAnyModal(elements.taskDetailsModal);
 
         const form = elements.taskForm;
+        const modal = elements.taskModal;
 
-        form.action = `/tasks/edit/${taskData.id}`;
+        modal.querySelector('h3').innerHTML = '<i class="fas fa-edit"></i> Редактирование задачи';
+        form.action = `/tasks/edit/${taskData.id}/`; 
 
         form.querySelector('[name="title"]').value = taskData.title;
         form.querySelector('[name="description"]').value = taskData.description;
         form.querySelector('[name="deadline"').value = taskData.deadline;
+        form.querySelector('[name="points"]').value = taskData.points;
+
+        if (taskData.deadline) {
+            form.querySelector('[name="deadline"]').value = taskData.deadline.split('T')[0];
+        }
+
 
         const submitBtn = form.querySelector('button[type="submit"]');
-        submitBtn.innerHTML = '<i class="fas fa-save"></i> Сохранить изменения';
+        submitBtn.innerHTML = '<i class="fas fa-save"></i> Сохранить';
 
-        elements.taskModal.classList.add('show');
+        modal.classList.add('show');
     }
 
-    document.getElementById('completeTaskBtn').addEventListener('click', () => {
-        if (currentTaskId) completeTask(currentTaskId);
-    });
 
     document.getElementById('editTaskBtn').addEventListener('click', () => {
         const taskData = {
@@ -474,6 +489,7 @@ document.addEventListener('DOMContentLoaded', () => {
         };
         openEditTaskModal(taskData);
     });
+
 
     class TaskCalendar {
         constructor() {
@@ -499,9 +515,7 @@ document.addEventListener('DOMContentLoaded', () => {
             this.tasks = await this.loadTasks();
             this.setupEventListeners();
             this.renderCalendar();
-        }
-
-
+        }        
 
         setupEventListeners() {
             if (this.elements.prevBtn) {
@@ -512,8 +526,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             if (this.elements.completeTaskBtn) {
                 this.elements.completeTaskBtn.addEventListener('click', async () => { 
-                    if (!currentTaskId) return;
-
+                    console.log("2222222")
                     const btn = this.elements.completeTaskBtn;
                     btn.disabled = true;
                     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
@@ -540,43 +553,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 });
             }
-            if (this.elements.editTaskBtn) {
-                this.elements.editTaskBtn.addEventListener('click', async () => {
-                    try {
-                        const response = await fetch(`/tasks/edit/${currentTaskId}/`, {
-                            headers: { 'X-Requested-With': 'XMLHttpRequest' }
-                        });
-                        const taskData = await response.json();
 
-                        
-                        document.getElementById('taskDetailsModal').classList.remove('show');
-
-                        
-                        const taskModal = document.getElementById('taskModal');
-                        const form = document.getElementById('taskForm');
-                        
-                        
-                        form.action = `/tasks/edit/${currentTaskId}/`;
-
-                        form.querySelector('[name="title"]').value = taskData.title;
-                        form.querySelector('[name="description"]').value = taskData.description;
-                        form.querySelector('[name="discipline"]').value = taskData.discipline;
-                        form.querySelector('[name="deadline"]').value = taskData.deadline;
-                        form.querySelector('[name="points"]').value = taskData.points;
-                        form.querySelector('[name="group"]').value = taskData.group;
-
-                        
-                        taskModal.querySelector('h3').innerHTML = '<i class="fas fa-edit"></i> Редактирование задачи';
-                        form.querySelector('button[type="submit"]').textContent = "Сохранить изменения";
-
-                        
-                        taskModal.classList.add('show');
-                    } catch (error) {
-                        console.error('Ошибка:', error);
-                        alert('Не удалось загрузить данные задачи');
-                    }
-                });
-            }
             this.elements.viewButtons.forEach(btn => {
                 btn.addEventListener('click', () => {
                     this.elements.viewButtons.forEach(b => b.classList.remove('active'));
@@ -854,6 +831,8 @@ document.addEventListener('DOMContentLoaded', () => {
             
             this.elements.taskTitle.textContent = task.title;
             const deadlineClass = this.getDeadlineClass(task.deadline);
+
+            console.log("click");
             
             this.elements.taskDetailsContent.innerHTML = `
                 <div class="task-detail-row">
@@ -903,6 +882,7 @@ document.addEventListener('DOMContentLoaded', () => {
             `;
             
             if (this.elements.completeTaskBtn) {
+                console.log("c:\edu\project\db.sqlite3")
                 if (task.isCompleted) {
                     this.elements.completeTaskBtn.disabled = true;
                     this.elements.completeTaskBtn.innerHTML = '<i class="fas fa-check"></i> Выполнено';
