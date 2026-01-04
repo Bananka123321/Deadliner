@@ -536,22 +536,23 @@ body {
 @media (max-width: 1024px) {
  
 .sidebar {
-  position: fixed;      
-  top: 0;               
-  left: -200;              
-  width: 280px;         
-  height: 100vh;        
+  width: 280px;
   background: var(--glass-bg);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border-right: 1px solid var(--glass-border);
+  top: 0;
   padding: 1.5rem 0;
   display: flex;
   flex-direction: column;
+  position: fixed;
+  height: 100vh;
   z-index: 100;
-  box-shadow: var(--shadow-md);
+  overflow-y: auto;
   transition: var(--transition);
+  box-shadow: var(--shadow-md);
 }
+
 
   
   .logo-text, .menu li span, .username {

@@ -84,7 +84,56 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    
+    function closeAnyModal(modal) {
+        if (!modal || !modal.classList.contains('show')) return;
+
+        const formGroups = modal.querySelectorAll('.form-group');
+        if (formGroups.length > 0) {
+            formGroups.forEach((group, index) => {
+                setTimeout(() => {
+                    group.style.opacity = '0';
+                    group.style.transform = 'translateY(10px)';
+                }, index * 30);
+            });
+        }
+
+        const delay = formGroups.length > 0 ? 300 : 0;
+
+        setTimeout(() => {
+            modal.classList.remove('show');
+            document.body.style.overflow = 'auto';
+
+            const form = modal.querySelector('form');
+            if (form) form.reset();
+        }, delay);
+    }
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === "Escape") {
+            const activeModal = document.querySelector('.modal-overlay.show, .task-details-modal.show');
+            if (activeModal){    
+                closeAnyModal(activeModal);
+            }
+        }
+    })
+
+    document.addEventListener('click', (e) => {
+        const target = e.target;
+
+        if (target.classList.contains('modal-overlay') || target.classList.contains('task-details-modal')) {
+            closeAnyModal(target);
+            return;
+        }
+
+        const closeButton = target.closest('.modal-close, .btn-secondary#cancelGroupModal, .btn-secondary#cancelTaskModal');
+
+        if (closeButton) {
+            const modal = closeButton.closest('.modal-overlay, .task-details-modal');
+            if (modal) {
+                closeAnyModal(modal);
+            }
+        }
+    })
 
     function openTaskActionModal(data) {
         currentTaskId = data.id;
@@ -192,23 +241,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    if (elements.closeTaskDetails) {
-        elements.closeTaskDetails.addEventListener('click', () => {
-            elements.taskDetailsModal.classList.remove('show');
-            document.body.style.overflow = 'auto';
-        });
-    }
-    
-     
-    if (elements.taskDetailsModal) {
-        elements.taskDetailsModal.addEventListener('click', (e) => {
-            if (e.target === elements.taskDetailsModal) {
-                elements.taskDetailsModal.classList.remove('show');
-                document.body.style.overflow = 'auto';
-            }
-        });
-    }
-
     function animateNeonCards() {
         document.querySelectorAll('.stat-card').forEach((card, index) => {
             setTimeout(() => {
@@ -228,140 +260,220 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     setTimeout(animateNeonCards, 1000);
 
-  document.querySelectorAll('.task-group.clickable').forEach(card => {
-      card.addEventListener('click', (e) => {
-          if (e.target.closest('button,a,form,.task-item')) return;
-          const href = card.dataset.href;
-          if (href) window.location.href = href;
-      });
-  });
+    document.querySelectorAll('.task-group.clickable').forEach(card => {
+        card.addEventListener('click', (e) => {
+            if (e.target.closest('button,a,form,.task-item')) return;
+            const href = card.dataset.href;
+            if (href) window.location.href = href;
+        });
+    });
 
-  setupModal(elements.groupModal, elements.openGroupBtn, elements.closeGroupBtn, elements.cancelGroupBtn, elements.groupForm, 'Группа успешно создана!');
-  setupModal(elements.taskModal, elements.openTaskBtn, elements.closeTaskBtn, elements.cancelTaskBtn, elements.taskForm, 'Задача успешно создана!');
+    function openCommonTaskModal(date = null) {
+        const modal = elements.taskModal;
+        const form = elements.taskForm;
 
-  function setupModal(modal, openBtn, closeBtn, cancelBtn, form, successMessage) {
-      if (!modal || !openBtn) return;
-      
-      const formGroups = modal.querySelectorAll('.form-group');
-      formGroups.forEach(group => {
-          group.style.opacity = '0';
-          group.style.transform = 'translateY(10px)';
-          group.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
-      });
+        form.reset();
 
-      const openModal = () => {
-          modal.classList.add('show');
-          document.body.style.overflow = 'hidden';
-          setTimeout(() => {
-              formGroups.forEach((group, index) => {
-                  setTimeout(() => {
-                      group.style.opacity = '1';
-                      group.style.transform = 'translateY(0)';
-                  }, 100 + (index * 70));
-              });
-          }, 100);
-      };
+        const dateField = form.querySelector('[name="deadline"]');
+        if (dateField) {
+            if (date) {
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const day = String(date.getDate()).padStart(2, '0');
+                dateField.value = `${year}-${month}-${day}`;
+            } else {
+                dateField.value = '';
+            }
+        }
+        modal.classList.add('show');
+        document.body.style.overflow = 'hidden';
 
-      const closeModal = () => {
-          formGroups.forEach((group, index) => {
-              setTimeout(() => {
-                  group.style.opacity = '0';
-                  group.style.transform = 'translateY(10px)';
-              }, index * 30);
-          });
-          setTimeout(() => {
-              modal.classList.remove('show');
-              document.body.style.overflow = 'auto';
-              if (form) form.reset();
-          }, 300);
-      };
+        const formGroups = modal.querySelectorAll('.form-group');
+        formGroups.forEach(group => {
+            group.style.opacity = '0';
+            group.style.transform = 'translateY(10px)';
+        });
 
-      openBtn.addEventListener('click', openModal);
-      if (closeBtn) closeBtn.addEventListener('click', closeModal);
-      if (cancelBtn) cancelBtn.addEventListener('click', closeModal);
-      modal.addEventListener('click', (e) => {
-          if (e.target === modal) closeModal();
-      });
-      document.addEventListener('keydown', (e) => {
-          if (e.key === 'Escape' && modal.classList.contains('show')) closeModal();
-      });
-
-      if (form) {
-          form.addEventListener('submit', function(e) {
-              
-              const submitBtn = this.querySelector('button[type="submit"]');
-              if (!submitBtn) return;
-              
-              submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Создание...';
-              submitBtn.disabled = true;
-              submitBtn.style.opacity = '0.85';
-
+        setTimeout(() => {
+            formGroups.forEach((group, index) => {
+                setTimeout(() => {
+                    group.style.opacity = '1';
+                    group.style.transform = 'translateY(0)';
+                }, 100 + (index * 70));
             });
+        }, 100);
+    } 
+
+    setupModal(elements.groupModal, elements.openGroupBtn, elements.closeGroupBtn, elements.cancelGroupBtn, elements.groupForm, 'Группа успешно создана!');
+    setupModal(elements.taskModal, null, elements.closeTaskBtn, elements.cancelTaskBtn, elements.taskForm, 'Задача успешно создана!');
+
+    if (elements.openTaskBtn) {
+        elements.openTaskBtn.addEventListener('click', () => {
+            openCommonTaskModal(null); 
+        });
+    }
+
+    function setupModal(modal, openBtn, closeBtn, cancelBtn, form, successMessage) {
+        if (!modal) return;
+        
+        const formGroups = modal.querySelectorAll('.form-group');
+
+
+        const openModal = () => {
+            formGroups.forEach(group => {
+                group.style.opacity = '0';
+                group.style.transform = 'translateY(10px)';
+                group.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+            });
+
+            modal.classList.add('show');
+            document.body.style.overflow = 'hidden';
+
+            setTimeout(() => {
+                formGroups.forEach((group, index) => {
+                    setTimeout(() => {
+                        group.style.opacity = '1';
+                        group.style.transform = 'translateY(0)';
+                    }, 100 + (index * 70));
+                });
+            }, 100);
+        };
+
+        if (openBtn) {
+            openBtn.addEventListener('click', openModal);
+        }
+
+
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                
+                const submitBtn = this.querySelector('button[type="submit"]');
+                if (!submitBtn) return;
+                
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Создание...';
+                submitBtn.disabled = true;
+                submitBtn.style.opacity = '0.85';
+
+                });
         }
     }
 
-  function showNotification(message, type = 'info') {
-      if (document.getElementById('notification-styles')) {
-          document.getElementById('notification-styles').remove();
-      }
-      
-      const style = document.createElement('style');
-      style.id = 'notification-styles';
-      style.textContent = `
-          .notification {
-              position: fixed;
-              top: 20px;
-              right: 20px;
-              z-index: 9999;
-              background: var(--glass-bg);
-              border: 1px solid var(--glass-border);
-              backdrop-filter: blur(10px);
-              border-radius: var(--radius-md);
-              padding: 1rem 1.5rem;
-              display: flex;
-              align-items: center;
-              gap: 0.8rem;
-              box-shadow: var(--shadow-lg);
-              opacity: 0;
-              transform: translateY(-20px);
-              transition: var(--transition);
-              min-width: 280px;
-          }
-          .notification.success { border-left: 4px solid var(--success); }
-          .notification.error { border-left: 4px solid var(--danger); }
-          .notification.info { border-left: 4px solid var(--primary); }
-          .notification-content { display: flex; align-items: center; gap: 0.8rem; color: white; }
-          .notification i { font-size: 1.2rem; }
-          .notification.success i { color: var(--success); }
-          .notification.error i { color: var(--danger); }
-          .notification.info i { color: var(--primary); }
-      `;
-      document.head.appendChild(style);
+    function showNotification(message, type = 'info') {
+        if (document.getElementById('notification-styles')) {
+            document.getElementById('notification-styles').remove();
+        }
+        
+        const style = document.createElement('style');
+        style.id = 'notification-styles';
+        style.textContent = `
+            .notification {
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                z-index: 9999;
+                background: var(--glass-bg);
+                border: 1px solid var(--glass-border);
+                backdrop-filter: blur(10px);
+                border-radius: var(--radius-md);
+                padding: 1rem 1.5rem;
+                display: flex;
+                align-items: center;
+                gap: 0.8rem;
+                box-shadow: var(--shadow-lg);
+                opacity: 0;
+                transform: translateY(-20px);
+                transition: var(--transition);
+                min-width: 280px;
+            }
+            .notification.success { border-left: 4px solid var(--success); }
+            .notification.error { border-left: 4px solid var(--danger); }
+            .notification.info { border-left: 4px solid var(--primary); }
+            .notification-content { display: flex; align-items: center; gap: 0.8rem; color: white; }
+            .notification i { font-size: 1.2rem; }
+            .notification.success i { color: var(--success); }
+            .notification.error i { color: var(--danger); }
+            .notification.info i { color: var(--primary); }
+        `;
+        document.head.appendChild(style);
 
-      const notification = document.createElement('div');
-      notification.className = `notification ${type}`;
-      notification.innerHTML = `
-          <div class="notification-content">
-              <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'}"></i>
-              <span>${message}</span>
-          </div>
-      `;
-      document.body.appendChild(notification);
-      
-      setTimeout(() => {
-          notification.style.opacity = '1';
-          notification.style.transform = 'translateY(0)';
-      }, 10);
-      
-      setTimeout(() => {
-          notification.style.opacity = '0';
-          notification.style.transform = 'translateY(-20px)';
-          setTimeout(() => {
-              document.body.removeChild(notification);
-              document.head.removeChild(style);
-          }, 300);
-      }, 3000);
-  }
+        const notification = document.createElement('div');
+        notification.className = `notification ${type}`;
+        notification.innerHTML = `
+            <div class="notification-content">
+                <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'}"></i>
+                <span>${message}</span>
+            </div>
+        `;
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            notification.style.opacity = '1';
+            notification.style.transform = 'translateY(0)';
+        }, 10);
+        
+        setTimeout(() => {
+            notification.style.opacity = '0';
+            notification.style.transform = 'translateY(-20px)';
+            setTimeout(() => {
+                document.body.removeChild(notification);
+                document.head.removeChild(style);
+            }, 300);
+        }, 3000);
+    }
+
+    async function completeTask(taskId) {
+                if (!confirm('Пометить задачу как выполненную')) return;
+
+                try {
+                    const response = await fetch(`/tasks/complete/${taskId}/`, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value, 
+                        }
+                    });
+
+                    if (response.ok) {
+                        showNotification('Задача выполнена!', 'success');
+                        closeAnyModal(elements.taskDetailsModal);
+
+                        setTimeout(() => location.reload(), 500);
+                    }
+                } catch (error) {
+                    console.error('Ошибка ;', error);
+                    showNotification('Не удалось выполнить задачу', 'error');
+                }
+            }
+
+    function openEditTaskModal(taskData) {
+        closeAnyModal(elements.taskDetailsModal);
+
+        const form = elements.taskForm;
+
+        form.action = `/tasks/edit/${taskData.id}`;
+
+        form.querySelector('[name="title"]').value = taskData.title;
+        form.querySelector('[name="description"]').value = taskData.description;
+        form.querySelector('[name="deadline"').value = taskData.deadline;
+
+        const submitBtn = form.querySelector('button[type="submit"]');
+        submitBtn.innerHTML = '<i class="fas fa-save"></i> Сохранить изменения';
+
+        elements.taskModal.classList.add('show');
+    }
+
+    document.getElementById('completeTaskBtn').addEventListener('click', () => {
+        if (currentTaskId) completeTask(currentTaskId);
+    });
+
+    document.getElementById('editTaskBtn').addEventListener('click', () => {
+        const taskData = {
+            id: currentTaskId,
+            title: document.getElementById('taskTitle').innerText,
+            description: document.querySelector('.task-desc')?.innerText || '',
+            deadline: document.querySelector('.task-date-val')?.innerText || ''
+        };
+        openEditTaskModal(taskData);
+    });
 
     class TaskCalendar {
         constructor() {
@@ -388,6 +500,8 @@ document.addEventListener('DOMContentLoaded', () => {
             this.setupEventListeners();
             this.renderCalendar();
         }
+
+
 
         setupEventListeners() {
             if (this.elements.prevBtn) {
@@ -457,7 +571,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
                         
                         taskModal.classList.add('show');
-                        
                     } catch (error) {
                         console.error('Ошибка:', error);
                         alert('Не удалось загрузить данные задачи');
@@ -721,6 +834,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         showTaskDetails(task) {
+            currentTaskId = task.id;
+            elements.taskTitle.innerText = task.title;
+
             if (!task) return;
             
             if (task.tasks) {
@@ -786,15 +902,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
             `;
             
-            // if (this.elements.completeTaskBtn) {
-            //     if (task.isCompleted) {
-            //         this.elements.completeTaskBtn.disabled = true;
-            //         this.elements.completeTaskBtn.innerHTML = '<i class="fas fa-check"></i> Выполнено';
-            //     } else {
-            //         this.elements.completeTaskBtn.disabled = false;
-            //         this.elements.completeTaskBtn.innerHTML = '<i class="fas fa-check"></i> Выполнить';
-            //     }
-            // }
+            if (this.elements.completeTaskBtn) {
+                if (task.isCompleted) {
+                    this.elements.completeTaskBtn.disabled = true;
+                    this.elements.completeTaskBtn.innerHTML = '<i class="fas fa-check"></i> Выполнено';
+                } else {
+                    this.elements.completeTaskBtn.disabled = false;
+                    this.elements.completeTaskBtn.innerHTML = '<i class="fas fa-check"></i> Выполнить';
+                }
+            }
         }
 
         renderMultipleTasks(date, tasks) {
@@ -844,19 +960,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         createTaskForDate(date) {
-            showNotification(`Создание задачи на ${this.formatDate(date)} скоро будет доступно!`, 'info');
-            const taskModal = document.getElementById('taskModal');
-            if (taskModal) {
-                taskModal.classList.add('show');
-                document.body.style.overflow = 'hidden';
-                const dateField = taskModal.querySelector('[name="deadline"]');
-                if (dateField) {
-                    const year = date.getFullYear();
-                    const month = String(date.getMonth() + 1).padStart(2, '0');
-                    const day = String(date.getDate()).padStart(2, '0');
-                    dateField.value = `${year}-${month}-${day}`;
-                }
-            }
+            openCommonTaskModal(date);
         }
     }
 
