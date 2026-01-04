@@ -14,11 +14,32 @@ document.addEventListener('DOMContentLoaded', () => {
         taskDetailsModal: document.getElementById('taskDetailsModal'),
         closeTaskDetails: document.getElementById('closeTaskDetails'),
         taskTitle: document.getElementById('taskTitle'),
-        taskDetailsContent: document.getElementById('taskDetailsContent')
+        taskDetailsContent: document.getElementById('taskDetailsContent'),
+
+        menuToggle: document.getElementById('menuToggle')
     };
+    
     let currentTaskId = null;
+    
     const menuItems = document.querySelectorAll('.menu li[data-section]');
     const contentSections = document.querySelectorAll('.content-section');
+    const sidebar = document.querySelector('.sidebar');
+
+    if (menuToggle) {
+        menuToggle.addEventListener('click', () => {
+            sidebar.classList.toggle('active');
+            menuToggle.querySelector('i').className = 
+            sidebar.classList.contains('active') ? 'fas fa-times' : 'fas fa-bars';
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!sidebar.contains(e.target) && !menuToggle.contains(e.target)) {
+            sidebar.classList.remove('active');
+            menuToggle.querySelector('i').className = 'fas fa-bars';
+            }
+        });
+    }
+
     let activeSection = localStorage.getItem('activeSection') || 'groups';
     activateSection(activeSection);
     menuItems.forEach(item => {
