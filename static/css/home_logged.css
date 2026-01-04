@@ -54,12 +54,15 @@ body {
   border-right: 1px solid var(--glass-border);
   position: fixed;
   top: 0;
-  left: 0;
   height: 100vh;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   z-index: 1000;
+}
+
+.sidebar.active {
+  left: 0;
 }
 
 .logo {
@@ -183,7 +186,6 @@ body {
 
 .main-content {
   flex: 1;
-  margin-left: 280px;
   padding: 2.5rem;
   overflow-y: auto;
   display: flex;
@@ -486,18 +488,18 @@ body {
 .modal-content.task-modal {
   background: var(--glass-bg);
   backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
   border: 1px solid var(--glass-border);
   border-radius: var(--radius-lg);
   width: 95%;
   max-width: 560px;
-  padding: 2.2rem;
+  max-height: 90vh;
+  padding: 1.8rem;
   position: relative;
   transform: scale(0.95);
-  transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), 
-              opacity 0.3s ease;
+  transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s ease;
   box-shadow: var(--shadow-lg);
   opacity: 0;
+  overflow-y: auto;
 }
 
 .modal-overlay.task-modal.show .modal-content.task-modal {
@@ -691,99 +693,6 @@ textarea.form-control {
   box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2);
 }
 
-@media (max-width: 768px) {
-  .main-content {
-    margin-left: 0;
-  }
-  
-  .sidebar {
-    left: -280px;
-    transition: left 0.3s ease;
-  }
-  
-  .sidebar.active {
-    left: 0;
-  }
-  
-  .stats-grid {
-    grid-template-columns: 1fr;
-  }
-  
-  .tasks-grid {
-    grid-template-columns: 1fr;
-  }
-  
-  .main-content {
-    padding: 1.5rem;
-  }
-  
-  .section-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 1rem;
-  }
-}
-
-@media (max-width: 992px) {
-  .sidebar {
-    width: 240px;
-    transform: translateX(0);
-    transition: transform 0.3s ease, width 0.3s ease;
-  }
-  
-  .main-content {
-    margin-left: 240px;
-  }
-}
-
-@media (max-width: 600px) {
-  .modal-content.task-modal {
-    width: 95%;
-    padding: 1.8rem;
-    margin: 1rem;
-  }
-  
-  .modal-header h3 {
-    font-size: 1.5rem;
-  }
-  
-  .modal-actions {
-    flex-direction: column;
-  }
-  
-  .btn-secondary, .btn-primary {
-    width: 100%;
-    justify-content: center;
-  }
-
-}
-@media (max-height: 700px) {
-  .sidebar {
-    height: 100vh;
-    padding-bottom: 60px;
-  }
-  
-  .menu ul {
-    overflow-y: auto;
-    max-height: calc(100vh - 200px);
-    padding-right: 4px;
-  }
-  
-  .menu ul::-webkit-scrollbar {
-    width: 4px;
-  }
-  
-  .menu ul::-webkit-scrollbar-track {
-    background: rgba(0,0,0,0.1);
-    border-radius: 2px;
-  }
-  
-  .menu ul::-webkit-scrollbar-thumb {
-    background: rgba(99, 102, 241, 0.5);
-    border-radius: 2px;
-  }
-}
-
 input[type="text"],
 input[type="number"],
 input[type="date"],
@@ -925,12 +834,6 @@ ul.errorlist li {
   color: #94a3b8;
   margin: 1.5rem 0;
   line-height: 1.6;
-}
-
-@media (max-width: 768px) {
-  .placeholder-card {
-    padding: 1.8rem;
-  }
 }
 
 .modal-overlay.group-modal {
@@ -1183,32 +1086,6 @@ textarea.form-control {
   grid-column: 1 / -1;
 }
 
-@media (max-width: 600px) {
-  .modal-content.task-modal,
-  .modal-content.group-modal {
-    width: 95%;
-    padding: 1.5rem;
-    margin: 1rem;
-  }
-  
-  .modal-header h3 {
-    font-size: 1.5rem;
-  }
-  
-  .modal-actions {
-    flex-direction: column;
-  }
-  
-  .btn-secondary {
-    width: 100%;
-    justify-content: center;
-  }
-  
-  .color-picker {
-    flex-wrap: wrap;
-  }
-}
-
 /* === Стили для календаря === */
 .section-header {
   display: flex;
@@ -1297,16 +1174,13 @@ textarea.form-control {
 }
 
 .calendar-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
   background: var(--glass-bg);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid var(--glass-border);
   border-radius: var(--radius-lg);
   overflow: hidden;
   box-shadow: var(--shadow-md);
-  height: calc(100% - 100px);
-  display: flex;
-  flex-direction: column;
 }
 
 .calendar-header {
@@ -1621,83 +1495,118 @@ textarea.form-control {
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* Адаптивность */
-@media (max-width: 900px) {
-  .view-toggle {
-    flex-direction: column;
-    width: 100%;
+.menu-toggle {
+  display: none;
+  background: var(--primary);
+  border: none;
+  color: white;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  font-size: 1.2rem;
+  margin-left: auto;
+}
+
+@media (min-width: 992px) {
+  .sidebar {
+    left: 0 !important;
+    position: fixed;
+    width: 280px;
   }
-  
-  .calendar-grid {
-    grid-auto-rows: minmax(80px, 1fr);
+
+  .main-content {
+    margin-left: 280px;
+  }
+
+  .menu-toggle {
+    display: none !important;
   }
 }
 
-@media (max-width: 768px) {
-  .section-header {
-    flex-direction: column;
-    align-items: flex-start;
+@media (max-width: 991px) {
+  .sidebar {
+    left: -280px;
+    position: fixed;
+    top: 0;
+    height: 100vh;
+    z-index: 1000;
   }
-  
-  .calendar-controls {
-    width: 100%;
-    justify-content: space-between;
-    flex-wrap: wrap;
-  }
-  
-  .current-period {
-    min-width: auto;
-    font-size: 1.3rem;
-  }
-  
-  .calendar-day {
-    min-height: 80px;
-  }
-  
-  .task-item-calendar {
-    font-size: 0.8rem;
-    padding: 0.2rem 0.4rem;
-  }
-  
-  .legend-container {
-    flex-direction: column;
-    gap: 0.8rem;
-  }
-}
 
-@media (max-width: 480px) {
-  .calendar-header,
-  .calendar-grid {
-    grid-template-columns: repeat(7, 1fr);
+  .sidebar.active {
+    left: 0;
   }
-  
-  .calendar-day-header {
-    font-size: 0.8rem;
-    padding: 0.3rem 0;
+
+  .main-content {
+    margin-left: 0;
   }
-  
-  .day-number span {
-    width: 20px;
-    height: 20px;
-    font-size: 0.8rem;
+
+  .menu-toggle {
+    display: block;
   }
-  
-  .modal-content {
-    width: 95%;
-    margin: 1rem;
-    padding: 1rem;
+
+  .modal-content.task-modal,
+  .modal-content.group-modal {
+    padding: 1.2rem;
+    margin: 0.8rem;
   }
-  
+  .form-group {
+    margin-bottom: 1.2rem;
+  }
+  .form-control, .form-select {
+    padding: 0.7rem 1rem;
+    font-size: 0.95rem;
+  }
   .modal-header h3 {
     font-size: 1.4rem;
   }
-  
-  .task-detail-row {
+
+  .stats-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .tasks-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .section-header {
     flex-direction: column;
-    margin-bottom: 0.8rem;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  .actions {
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  .btn-primary {
+    padding: 0.6rem 1.2rem;
+    font-size: 0.95rem;
+  }
+  .main-content {
+    padding: 1.2rem;
   }
   
-  .task-detail-label {
-    margin-bottom: 0.3rem;
+  .page-header {
+    margin-bottom: 1.5rem;
+  }
+  
+  .page-header h1 {
+    font-size: 1.8rem;
+  }
+
+  .calendar-day {
+    min-height: 70px;
+    padding: 0.3rem;
+  }
+  .task-item-calendar {
+    font-size: 0.75rem;
+    padding: 0.15rem 0.3rem;
+  }
+  .legend-container {
+    flex-direction: column;
+    gap: 0.6rem;
+    font-size: 0.85rem;
   }
 }
