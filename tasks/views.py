@@ -66,16 +66,6 @@ def group_tasks(request, group_id):
         })
     return JsonResponse(grouped)
 
-@csrf_exempt
-def toggle_task(request, task_id):
-    user_task = UserTask.objects.get(user=request.user, task_id=task_id)
-    if user_task.is_done:
-        user_task.is_done = False
-    else:
-        user_task.is_done = True
-    user_task.save()
-    return JsonResponse({"ok": True})
-
 
 def calculate_streak(user):
     stats, created = UserStats.objects.get_or_create(user=user)
@@ -153,7 +143,7 @@ def group_detail(request, group_id):
         'leaderboard': leaderboard,
     }
 
-    return render(request, 'tasks/group_detail.html', context)
+    return render(request, 'group/home_logged.html', context)
 
 @login_required
 def create_task(request):
@@ -251,19 +241,12 @@ def get_calendar_tasks(request):
 def toggle_task(request, task_id):
     user_task = get_object_or_404(UserTask, user=request.user, task_id=task_id)
     
-    if user_task.status == UserTask.Status.ACTIVE:
-        user_task.status = UserTask.Status.DONE_ON_TIME
-        user_task.is_done = True
-    else:
-        user_task.status = UserTask.Status.ACTIVE
-        user_task.is_done = False
+    print(user_task.is_done)
     
+    user_task.is_done = not user_task.is_done
     user_task.save()
-    
-    if hasattr(request.user, 'stats'):
-        request.user.stats.update_streak()
         
-    return JsonResponse({'ok': True, 'new_status': user_task.get_status_display()})
+    return JsonResponse({"status": "success", "isCompleted": user_task.is_done})
 
 @login_required
 def edit_task(request, task_id):

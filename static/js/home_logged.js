@@ -22,11 +22,13 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     
     let currentTaskId = null;
+    let currentTaskFullData = null;
     
     const menuItems = document.querySelectorAll('.menu li[data-section]');
     const contentSections = document.querySelectorAll('.content-section');
     const sidebar = document.querySelector('.sidebar');
 
+    const menuToggle = elements.menuToggle;
     if (menuToggle) {
         menuToggle.addEventListener('click', () => {
             sidebar.classList.toggle('active');
@@ -101,7 +103,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.querySelectorAll('.task-group.clickable').forEach(card => {
         card.addEventListener('click', (e) => {
-            if (e.target.closest('button,a,form,.list-task-item')) return;  
+            if (e.target.closest('button,a,form,.list-task-item,.task-item')) return;  
             const href = card.dataset.href;
             if (href) window.location.href = href;
         });
@@ -185,9 +187,17 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function openTaskModalFromList(taskElement) {
-        console.log("1111111111111111111111111111");
         const data = taskElement.dataset;
         currentTaskId = data.id;
+        currentTaskFullData = {
+            id: data.id,
+            title: data.title,
+            description: data.description,
+            discipline: data.discipline,
+            deadline: data.deadline, 
+            points: data.points,
+            group: data.group            
+        }
 
         elements.taskTitle.textContent = data.title;
 
@@ -230,12 +240,21 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
         `;
 
+        const btn = elements.completeTaskBtn;
+        const now = new Date();
+        const isCompleted = data.isCompleted === 'true';
 
+        btn.className = 'btn-primary';
          
-        // elements.completeTaskBtn.innerHTML = '<i class="fas fa-check"></i> Выполнить';
-        // elements.completeTaskBtn.disabled = false;
-        // elements.completeTaskBtn.classList.remove('btn-secondary');
-        // elements.completeTaskBtn.classList.add('btn-primary');
+        if (isCompleted) {
+            btn.innerHTML = '<i class="fas fa-check-double"></i> Выполнено';
+            btn.classList.add('btn-secondary');
+        } else if (dateObj < now) {
+            btn.innerHTML = '<i class="fas fa-fire"></i> Просрочено';
+            btn.classList.add('btn-expired');
+        } else {
+            btn.innerHTML = '<i class="fas fa-check"></i> Выполнить';
+        }
 
         elements.taskDetailsModal.classList.add('show');
         document.body.style.overflow = 'hidden';
@@ -266,17 +285,8 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
     setTimeout(animateNeonCards, 1000);
-
-    document.querySelectorAll('.task-group.clickable').forEach(card => {
-        card.addEventListener('click', (e) => {
-            if (e.target.closest('button,a,form,.task-item')) return;
-            const href = card.dataset.href;
-            if (href) window.location.href = href;
-        });
-    });
-
+    
     function openCommonTaskModal(date = null) {
-        console.log("poroms")
         const modal = elements.taskModal;
         const form = elements.taskForm;
 
@@ -284,12 +294,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (date) {
             const dateField = form.querySelector('[name="deadline"]');
-            if (dateField) {
-                    const year = date.getFullYear();
-                    const month = String(date.getMonth() + 1).padStart(2, '0');
-                    const day = String(date.getDate()).padStart(2, '0');
-                    dateField.value = `${year}-${month}-${day}`;
-                }
+            dateField.value = formatDateTimeForInput(date);
         }
         modal.classList.add('show');
         document.body.style.overflow = 'hidden';
@@ -426,44 +431,76 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 3000);
     }
 
-    document.getElementById('completeTaskBtn').addEventListener('click', () => {
-        console.log("click2");
+    document.getElementById('completeTaskBtn').addEventListener('click', (e) => {
+        e.preventDefault(); 
         if (currentTaskId) {
             completeTask(currentTaskId);
         }
     });
 
     async function completeTask(taskId) {
-                console.log("click2");
-                // if (!confirm('Пометить задачу как выполненную')) return;
+        const btn = elements.completeTaskBtn;
 
-                console.log("123123123")
+        btn.disabled = true;
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Сохранение...';
 
-                const btn = elements.completeTaskBtn;
-                btn.disabled = true;
-                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-
-                try {
-                    const response = await fetch(`/toggle-task/${currentTaskId}/`, {
-                        method: 'POST',
-                        headers: {
-                            'X-CSRFToken': getCookie('csrftoken'), 
-                            'X-Requested-With': 'XMLHttpRequest'
-                        }
-                    });
-
-                    const data = await response.json();
-                    if (data.ok) {
-                        location.reload();
-                    } else {
-                        alert('Ошибка сервера');
-                    }
-                } catch (error) {
-                    console.error('Ошибка:', error);
-                } finally {
-                    btn.disabled = false;
+        try {
+            const response = await fetch(`/toggle-task/${taskId}/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken'),
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
                 }
+            });
+
+            const data = await response.json();
+
+            if (!response.ok || data.status !== 'success') {
+                throw new Error(data.message || 'Ошибка сервера');
             }
+
+            const task = window.taskCalendar?.tasks?.find(t => t.id === taskId);
+
+            if (!task) {
+                console.warn('Задача не найдена', taskId);
+                window.location.reload();
+                return;
+            }
+
+            task.isCompleted = data.isCompleted;
+
+            btn.disabled = false;
+            btn.innerHTML = task.isCompleted
+                ? '<i class="fas fa-check-double"></i> Выполнено'
+                : '<i class="fas fa-check"></i> Выполнить';
+
+            window.taskCalendar.renderCalendar();
+        } catch (error) {
+            console.error('Ошибка сети:', error);
+            alert('Ошибка соединения с сервером');
+            btn.disabled = false;
+            btn.innerHTML = originalText;
+        }
+    }
+
+    function formatDateTimeForInput(date) {
+        if (!date) return '' 
+        
+        const d = date;
+        
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        const hours = String(d.getHours()).padStart(2, '0');
+        const minutes = String(d.getMinutes()).padStart(2, '0');
+
+        const formattedDateTime = `${year}-${month}-${day}T${hours}:${minutes}`;
+        
+        return formattedDateTime;
+        
+    }
 
     function openEditTaskModal(taskData) {
         closeAnyModal(elements.taskDetailsModal);
@@ -473,12 +510,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const form = elements.taskForm;
 
         modal.querySelector('h3').innerHTML = '<i class="fas fa-edit"></i> Редактирование задачи';
-        form.action = `/tasks/edit/${taskData.id}/`; 
+        form.action = `/tasks/edit/${taskData.id}/`;         
 
         form.querySelector('[name="title"]').value = taskData.title || '';
         form.querySelector('[name="description"]').value = taskData.description || '';
         form.querySelector('[name="discipline"]').value = taskData.discipline || '';
-        form.querySelector('[name="deadline"]').value = taskData.deadline ? taskData.deadline.split('T')[0] : '';
+        form.querySelector('[name="deadline"]').value = formatDateTimeForInput(taskData.deadline);
         form.querySelector('[name="points"]').value = taskData.points || '';
         if (taskData.group) {
             form.querySelector('[name="group"]').value = taskData.group;
@@ -490,6 +527,8 @@ document.addEventListener('DOMContentLoaded', () => {
         modal.classList.add('show');
         document.body.style.overflow = 'hidden';
 
+        console.log(modalContent);
+
         if (modalContent) {
             modalContent.classList.add('show');
         }
@@ -497,13 +536,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     document.getElementById('editTaskBtn').addEventListener('click', () => {
-        const taskData = {
-            id: currentTaskId,
-            title: document.getElementById('taskTitle').innerText,
-            description: document.querySelector('.task-desc')?.innerText || '',
-            deadline: document.querySelector('.task-date-val')?.innerText || ''
-        };
-        openEditTaskModal(taskData);
+
+        console.log(currentTaskFullData);
+
+        openEditTaskModal(currentTaskFullData);
     });
 
 
@@ -511,6 +547,7 @@ document.addEventListener('DOMContentLoaded', () => {
         constructor() {
             this.currentDate = new Date();
             this.currentView = 'month';
+            this.tasks = [];
             this.init();
         }
 
@@ -523,13 +560,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 viewButtons: document.querySelectorAll('.view-btn'),
                 taskDetailsModal: document.getElementById('taskDetailsModal'),
                 closeTaskDetails: document.getElementById('closeTaskDetails'),
-                taskTitle: document.getElementById('taskTitle'),
-                taskDetailsContent: document.getElementById('taskDetailsContent'),
+                taskTitle: document.getElementById('taskTitle'),    
                 completeTaskBtn: document.getElementById('completeTaskBtn'),
-                editTaskBtn: document.getElementById('editTaskBtn')
+                taskDetailsContent: document.getElementById('taskDetailsContent')
             };
-            this.tasks = await this.loadTasks();
             this.setupEventListeners();
+            this.tasks = await this.loadTasks();
             this.renderCalendar();
         }        
 
@@ -539,35 +575,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             if (this.elements.nextBtn) {
                 this.elements.nextBtn.addEventListener('click', () => this.changeMonth(1));
-            }
-            if (this.elements.completeTaskBtn) {
-                this.elements.completeTaskBtn.addEventListener('click', async () => { 
-                    console.log("2222222")
-                    const btn = this.elements.completeTaskBtn;
-                    btn.disabled = true;
-                    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-
-                    try {
-                        const response = await fetch(`/toggle-task/${currentTaskId}/`, {
-                            method: 'POST',
-                            headers: {
-                                'X-CSRFToken': getCookie('csrftoken'), 
-                                'X-Requested-With': 'XMLHttpRequest'
-                            }
-                        });
-
-                        const data = await response.json();
-                        if (data.ok) {
-                            location.reload();
-                        } else {
-                            alert('Ошибка сервера');
-                        }
-                    } catch (error) {
-                        console.error('Ошибка:', error);
-                    } finally {
-                        btn.disabled = false;
-                    }
-                });
             }
 
             this.elements.viewButtons.forEach(btn => {
@@ -597,10 +604,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 
                 const data = await response.json();
-                
+
                 return data.map(task => ({
                     ...task,
-                    deadline: new Date(task.deadline)
+                    deadline: new Date(task.deadline),
+                    isCompleted: Boolean(task.isCompleted || task.is_completed || task.completed)
                 }));
                 
             } catch (error) {
@@ -844,15 +852,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
         renderSingleTask(task) {
             if (!this.elements.taskTitle || !this.elements.taskDetailsContent) return;
-            
+
+            currentTaskFullData = task;
+            currentTaskId = task.id;
+
             this.elements.taskTitle.textContent = task.title;
             const deadlineClass = this.getDeadlineClass(task.deadline);
-
-            console.log("click");
             
             this.elements.taskDetailsContent.innerHTML = `
                 <div class="task-detail-row">
-                    <div class="task-detail-label">Дата:</div>
+                    <div class="task-detail-label">Дата: </div>
                     <div class="task-detail-value">
                         <span class="deadline-badge ${deadlineClass}">
                             ${this.formatDeadline(task.deadline)} · ${this.formatTime(task.deadline)}
@@ -860,7 +869,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                 </div>
                 <div class="task-detail-row">
-                    <div class="task-detail-label">Группа:</div>
+                    <div class="task-detail-label">Группа: </div>
                     <div class="task-detail-value">
                         <span class="group-badge ${task.isGroupTask ? 'group' : 'personal'}">
                             ${task.group}
@@ -868,11 +877,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                 </div>
                 <div class="task-detail-row">
-                    <div class="task-detail-label">Дисциплина:</div>
-                    <div class="task-detail-value">${task.discipline}</div>
+                    <div class="task-detail-label">Дисциплина: </div>
+                    <div class="task-detail-value">${task.discipline || ' —'}</div>
                 </div>
                 <div class="task-detail-row">
-                    <div class="task-detail-label">Баллы:</div>
+                    <div class="task-detail-label">Баллы: </div>
                     <div class="task-detail-value">
                         <span class="points-badge">
                             <i class="fas fa-star"></i> ${task.points}
@@ -880,7 +889,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                 </div>
                 <div class="task-detail-row">
-                    <div class="task-detail-label">Описание:</div>
+                    <div class="task-detail-label">Описание: </div>
                     <div class="task-detail-value">
                         <div class="task-description">
                             ${task.description || 'Без описания'}
@@ -888,7 +897,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                 </div>
                 <div class="task-detail-row">
-                    <div class="task-detail-label">Статус:</div>
+                    <div class="task-detail-label">Статус: </div>
                     <div class="task-detail-value">
                         <span class="status-badge ${task.isCompleted ? 'completed' : 'pending'}">
                             ${task.isCompleted ? 'Выполнено' : 'В процессе'}
@@ -897,15 +906,24 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
             `;
             
-            if (this.elements.completeTaskBtn) {
-                console.log("c:\edu\project\db.sqlite3")
-                if (task.isCompleted) {
-                    this.elements.completeTaskBtn.disabled = true;
-                    this.elements.completeTaskBtn.innerHTML = '<i class="fas fa-check"></i> Выполнено';
-                } else {
-                    this.elements.completeTaskBtn.disabled = false;
-                    this.elements.completeTaskBtn.innerHTML = '<i class="fas fa-check"></i> Выполнить';
-                }
+            const btn = this.elements.completeTaskBtn;
+            const now = new Date();
+
+            btn.className = 'btn-primary';
+            btn.disabled = false;
+
+
+            if (task.isCompleted) {
+                // btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-check-double"></i> Выполнено';
+                btn.classList.add('btn-secondary');
+            } else if (task.deadline < now) {
+                // btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-clock"></i> Просрочено';
+                btn.classList.add('btn-expired');
+            } else {
+                // btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-check"></i> Выполнить';
             }
         }
 

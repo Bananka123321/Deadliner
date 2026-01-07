@@ -117,7 +117,8 @@
                       data-discipline="{{ task.discipline|default:'' }}"
                       data-deadline="{{ task.deadline|date:'c' }}"
                       data-group="{{ group.name }}"
-                      data-points="{{ task.points }}">
+                      data-points="{{ task.points }}"
+                      data-is-completed="{{ task.is_completed|yesno:'true,false' }}">
                     <div class="task-content">
                       <div class="task-title">{{ task.title }}</div>
                       <div class="task-meta">
