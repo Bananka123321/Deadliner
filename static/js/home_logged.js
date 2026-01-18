@@ -200,8 +200,8 @@ document.addEventListener('DOMContentLoaded', () => {
             id: data.id,
             title: data.title,
             description: data.description,
-            discipline: data.discipline,
             deadline: data.deadline, 
+            discipline: data.discipline,
             points: data.points,
             group: data.group,
             isCompleted: isCompleted            
@@ -509,15 +509,31 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!date) return '' 
         
         const d = date;
-        
-        const year = d.getFullYear();
-        const month = String(d.getMonth() + 1).padStart(2, '0');
-        const day = String(d.getDate()).padStart(2, '0');
-        const hours = String(d.getHours()).padStart(2, '0');
-        const minutes = String(d.getMinutes()).padStart(2, '0');
 
-        const formattedDateTime = `${year}-${month}-${day}T${hours}:${minutes}`;
+        formattedDateTime  = ``;
         
+        try{
+            const year = d.getFullYear();
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            const hours = String(d.getHours()).padStart(2, '0');
+            const minutes = String(d.getMinutes()).padStart(2, '0');
+
+            formattedDateTime = `${year}-${month}-${day}T${hours}:${minutes}`;
+
+        } 
+        catch 
+        {
+            const datas = new Date(date);
+
+            const year = datas.getUTCFullYear();     
+            const month = datas.getUTCMonth() + 1;  
+            const day = datas.getUTCDate();        
+            const hours = datas.getUTCHours();     
+            const minutes = datas.getUTCMinutes(); 
+
+            formattedDateTime = `${year}-${month}-${day}T${hours}:${minutes}`;
+        }
         return formattedDateTime;
         
     }
