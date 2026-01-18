@@ -532,6 +532,63 @@ body {
   background: rgba(255, 255, 255, 0.05);
 }
 
+.add-member-section {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  background: rgba(30, 41, 59, 0.4);
+  border-radius: var(--radius-md);
+}
+
+.form-group {
+  display: flex;
+  gap: 0.8rem;
+  margin-bottom: 1rem;
+}
+
+#usernameInput {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--glass-border);
+  background: rgba(255, 255, 255, 0.05);
+  color: white;
+}
+
+.message {
+  padding: 0.5rem;
+  border-radius: var(--radius-sm);
+  margin-top: 0.5rem;
+}
+
+.message.success {
+  background: rgba(16, 185, 129, 0.2);
+  color: #10b981;
+}
+
+.message.error {
+  background: rgba(239, 68, 68, 0.2);
+  color: #ef4444;
+}
+
+.member-item {
+  padding: 0.4rem 0;
+  border-bottom: 1px solid var(--glass-border);
+}
+
+
+.message {
+  padding: 0.5rem;
+  border-radius: var(--radius-sm);
+  margin-top: 0.5rem;
+}
+.message.success {
+  background: rgba(16, 185, 129, 0.2);
+  color: #10b981;
+}
+.message.error {
+  background: rgba(239, 68, 68, 0.2);
+  color: #ef4444;
+}
 
 @media (max-width: 1024px) {
  

@@ -9,6 +9,7 @@ from .forms import TaskForm
 from django.contrib import messages
 from django.utils import timezone
 from django.views.decorators.http import require_POST
+from django.contrib.auth.models import User
 
 def home(request):
     if request.user.is_authenticated:
@@ -19,24 +20,32 @@ def home(request):
 @login_required
 def home_logged(request):
     user = request.user
+
+    stats, created = UserStats.objects.get_or_create(user=user)
+
     groups = user.class_groups.all()
 
-    total_done = user.stats.total_done()
+    total_done = stats.total_done()
     total_pending = UserTask.objects.filter(
         user=user, 
         is_done=False  
     ).count()
     
-    total_tasks =  total_done + total_pending
+    total_tasks = total_done + total_pending
     progress_percent = round((total_done / total_tasks * 100), 1) if total_tasks > 0 else 0
-    current_streak = getattr(user.stats, "streak", 0) if hasattr(user, "stats") else 0
+    current_streak = stats.streak
 
-    higher_users_count = UserStats.objects.filter(total_points__gt=user.stats.total_points).count()
+    higher_users_count = UserStats.objects.filter(total_points__gt=stats.total_points).count()
     rank = higher_users_count + 1
 
     group_tasks = {}
     for group in groups:
-        user_tasks = UserTask.objects.filter(user=user, task__group=group).exclude(status__in=[UserTask.Status.DONE_ON_TIME, UserTask.Status.DONE_LATE]).order_by('task__deadline')[:3]
+        user_tasks = UserTask.objects.filter(
+            user=user, 
+            task__group=group
+        ).exclude(
+            status__in=[UserTask.Status.DONE_ON_TIME, UserTask.Status.DONE_LATE]
+        ).order_by('task__deadline')[:3]
         group_tasks[group] = [ut.task for ut in user_tasks]
 
     context = {
@@ -49,7 +58,6 @@ def home_logged(request):
     }
 
     return render(request, 'tasks/home_logged.html', context)
-
 def group_tasks(request, group_id):
     tasks = Task.objects.filter(group_id=group_id)
 
@@ -93,7 +101,6 @@ def get_group_tasks(user):
         ]
 
     return group_tasks
-
 
 def dashboard(request):
     user = request.user
@@ -159,8 +166,6 @@ def create_task(request):
 def create_group(request):
     if request.method == 'POST':
         group_name = request.POST.get('name', '').strip()
-        description = request.POST.get('description', '').strip()
-        color = request.POST.get('color', 'blue')
         
         if not group_name:
             messages.error(request, 'Название группы обязательно для заполнения')
@@ -171,7 +176,7 @@ def create_group(request):
             return redirect('home_logged')
         
         try:
-            group = ClassGroup.objects.create(name=group_name)
+            group = ClassGroup.objects.create(name=group_name, owner=request.user)
             
             GroupRole.objects.create(
                 user=request.user,
@@ -276,3 +281,37 @@ def edit_task(request, task_id):
         'group': task.group.id if task.group else ''
     }
     return JsonResponse(data)
+
+@login_required
+@require_POST
+def add_member_to_group(request, group_id):
+    try:
+        group = ClassGroup.objects.get(id=group_id, owner=request.user)
+    except ClassGroup.DoesNotExist:
+        return JsonResponse({'error': 'Группа не найдена'}, status=404)
+
+    username = request.POST.get('username', '').strip()
+
+    if not username:
+        return JsonResponse({'error': 'Укажите никнейм'}, status=400)
+
+    try:
+        user_to_add = User.objects.get(username__iexact=username)
+    except User.DoesNotExist:
+        return JsonResponse({'error': 'Пользователь не найден'}, status=404)
+
+    if user_to_add == request.user:
+        return JsonResponse({'error': 'Вы уже в группе'}, status=400)
+
+    if user_to_add in group.members.all():
+        return JsonResponse({'error': 'Пользователь уже в группе'}, status=400)
+
+    group.members.add(user_to_add)
+    return JsonResponse({
+        'success': True,
+        'message': f'Пользователь {user_to_add.username} добавлен',
+        'user': {
+            'id': user_to_add.id,
+            'username': user_to_add.username,
+        }
+    })
