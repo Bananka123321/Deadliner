@@ -5,6 +5,7 @@ from django.core.exceptions import ValidationError
 
 class ClassGroup(models.Model):
     name = models.CharField(max_length=10)
+    owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name="owned_groups")
     members = models.ManyToManyField(User, related_name="class_groups")
     created_at = models.DateTimeField(auto_now_add=True)
 

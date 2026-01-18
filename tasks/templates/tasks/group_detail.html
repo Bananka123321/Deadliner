@@ -12,13 +12,11 @@
     <aside class="sidebar">
         <div class="logo">
             <div class="logo-icon">🚀</div>
-            <span class="logo-text">TaskFlow</span>
+            <span class="logo-text">DeadLiner</span>
         </div>
         <nav class="menu">
             <ul>
-                <li class="active"><i class="fas fa-users"></i> <span>Группы</span></li>
-                <li><i class="fas fa-tasks"></i> <span>Задачи</span></li>
-                <li><i class="fas fa-calendar-alt"></i> <span>Календарь</span></li>
+                <li class="active"><i class="fas fa-users"></i> <span>Общее</span></li>
             </ul>
         </nav>
         <div class="sidebar-footer">
@@ -69,59 +67,59 @@
         </div>
         <div class="tasks-section">
             <div class="section-header">
-                <h2>Активные задачи</h2>
-                <button class="btn-primary"><i class="fas fa-plus"></i> Новая задача</button>
-            </div>
-            <div class="tasks-grid">
-                <div class="task-group personal">
-                    <div class="group-header">
-                        <h3>Нейросети</h3>
-                        <span class="task-count">8/18</span>
-                    </div>
-                    <div class="tasks-list">
-                        <div class="task-item">
-                            <div class="task-icon">🤖</div>
-                            <div>
-                                <div class="task-title">Лабораторная: CNN</div>
-                                <div class="task-meta">
-                                    <span class="discipline">Нейросети</span>
-                                    <span class="deadline">До 10.12</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="task-item">
-                            <div class="task-icon">🚀</div>
-                            <div>
-                                <div class="task-title">Проект: SpaceX</div>
-                                <div class="task-meta">
-                                    <span class="discipline">Физика</span>
-                                    <span class="deadline">До 15.12</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="task-group">
-                    <div class="group-header">
-                        <h3>Идеи стартапов</h3>
-                        <span class="task-count">12/18</span>
-                    </div>
-                    <div class="tasks-list">
-                        <div class="task-item">
-                            <div class="task-icon">💡</div>
-                            <div>
-                                <div class="task-title">Придумать edtech-стартап</div>
-                                <div class="task-meta">
-                                    <span class="discipline">Бизнес</span>
-                                    <span class="deadline">До 06.12</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <h2>Задачи группы</h2>
+            {% if request.user in group.members %}
+            <button class="btn-primary" id="openTaskModal">
+                <i class="fas fa-plus"></i> Новая задача
+            </button>
+            {% endif %}
         </div>
 
+        {% if tasks %}
+            <div class="tasks-grid">
+            {% for user_task in tasks %}
+                {% with task=user_task.task %}
+                <div class="task-group {% if not task.group %}personal{% endif %}">
+                    <div class="group-header">
+                    <h3>{{ task.title }}</h3>
+                    <span class="task-count">
+                        {% if user_task.is_done %}
+                        <i class="fas fa-check-circle text-green-500"></i> Выполнено
+                        {% else %}
+                        <i class="fas fa-clock text-yellow-500"></i> В процессе
+                        {% endif %}
+                    </span>
+                    </div>
+                    <div class="tasks-list">
+                    <div class="task-item">
+                        <div class="task-content">
+                        <div class="task-title">{{ task.title }}</div>
+                        <div class="task-meta">
+                            {% if task.discipline %}
+                            <span class="discipline">{{ task.discipline }}</span>
+                            {% endif %}
+                            {% if task.deadline %}
+                            <span class="deadline">до {{ task.deadline|date:"d.m.Y H:i" }}</span>
+                            {% endif %}
+                            <span class="points">★ {{ task.points }}</span>
+                        </div>
+                        {% if task.description %}
+                            <div class="task-description mt-2" style="font-size:0.9rem; color:#94a3b8;">
+                            {{ task.description }}
+                            </div>
+                        {% endif %}
+                        </div>
+                    </div>
+                    </div>
+                </div>
+                {% endwith %}
+            {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-state">
+            <p>В этой группе пока нет задач.</p>
+            </div>
+            {% endif %}
     <div class="modal-overlay" id="leaders-modal">
         <div class="modal-content">
             <button class="modal-close" id="leaders-close">&times;</button>
@@ -146,6 +144,24 @@
                 </tbody>
             </table>
         </div>
+    </div>
+
+    <div class="add-member-section">
+    <h3>Добавить участника</h3>
+    <form id="addMemberForm" data-group-id="{{ group.id }}">
+        <div class="form-group">
+        <input type="text" id="usernameInput" placeholder="Введите никнейм..." maxlength="150">
+        <button type="submit" class="btn-primary">Добавить</button>
+        </div>
+        <div id="memberMessage" class="message"></div>
+    </form>
+
+    <div class="members-list">
+        <h4>Участники ({{ group.members.count }}):</h4>
+        {% for member in group.members.all %}
+        <div class="member-item">{{ member.username }}</div>
+        {% endfor %}
+    </div>
     </div>
     </main>
 </div>

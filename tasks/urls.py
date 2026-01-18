@@ -16,8 +16,10 @@ urlpatterns = [
     path('group/<int:group_id>/', views.group_detail, name='group_detail'),
     
     path('tasks/create/', views.create_task, name='create_task'),
-    path('groups/create/', views.create_group, name='create_group'), 
+    path('groups/create/', views.create_group, name='create_group'),
     
     path('toggle-task/<int:task_id>/', views.toggle_task, name='toggle_task'),
-    path('tasks/edit/<int:task_id>/', views.edit_task, name='edit_task'),  
+    path('tasks/edit/<int:task_id>/', views.edit_task, name='edit_task'),
+
+    path('group/<int:group_id>/add-member/', views.add_member_to_group, name='add_member_to_group'),
 ]
