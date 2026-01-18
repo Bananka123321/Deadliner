@@ -11,6 +11,8 @@ router.register(r"user-stats", UserStatsViewSet)
 urlpatterns = [
     path('api/', include(router.urls)),
 
+    path('api/calendar-tasks/', views.get_calendar_tasks, name='calendar_tasks'),
+
     path('', views.home, name='home'),
     path('dashboard/', views.home_logged, name='home_logged'),
     path('group/<int:group_id>/', views.group_detail, name='group_detail'),

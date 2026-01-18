@@ -189,6 +189,13 @@ document.addEventListener('DOMContentLoaded', () => {
     function openTaskModalFromList(taskElement) {
         const data = taskElement.dataset;
         currentTaskId = data.id;
+
+        const parseBoolean = (val) => {
+             return val === 'true' || val === 'True' || val === '1' || val === true || val === 1;
+        };
+
+        const isCompleted = parseBoolean(data.isCompleted);
+
         currentTaskFullData = {
             id: data.id,
             title: data.title,
@@ -196,7 +203,8 @@ document.addEventListener('DOMContentLoaded', () => {
             discipline: data.discipline,
             deadline: data.deadline, 
             points: data.points,
-            group: data.group            
+            group: data.group,
+            isCompleted: isCompleted            
         }
 
         elements.taskTitle.textContent = data.title;
@@ -242,7 +250,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const btn = elements.completeTaskBtn;
         const now = new Date();
-        const isCompleted = data.isCompleted === 'true';
 
         btn.className = 'btn-primary';
          
@@ -461,22 +468,35 @@ document.addEventListener('DOMContentLoaded', () => {
                 throw new Error(data.message || 'Ошибка сервера');
             }
 
-            const task = window.taskCalendar?.tasks?.find(t => t.id === taskId);
-
-            if (!task) {
-                console.warn('Задача не найдена', taskId);
-                window.location.reload();
-                return;
-            }
-
-            task.isCompleted = data.isCompleted;
+            const newStatus = data.isCompleted; 
 
             btn.disabled = false;
-            btn.innerHTML = task.isCompleted
-                ? '<i class="fas fa-check-double"></i> Выполнено'
-                : '<i class="fas fa-check"></i> Выполнить';
+            if (newStatus) {
+                btn.innerHTML = '<i class="fas fa-check-double"></i> Выполнено';
+                btn.classList.add('btn-secondary');
+                btn.classList.remove('btn-expired'); 
+            } else {
+                btn.innerHTML = '<i class="fas fa-check"></i> Выполнить';
+                btn.classList.remove('btn-secondary');
+            }
 
-            window.taskCalendar.renderCalendar();
+            if (window.taskCalendar && window.taskCalendar.tasks) {
+                const task = window.taskCalendar.tasks.find(t => t.id == taskId); 
+                if (task) {
+                    task.isCompleted = newStatus;
+                    window.taskCalendar.renderCalendar();
+                }
+            }
+
+            const listItem = document.querySelector(`.list-task-item[data-id="${taskId}"]`);
+            if (listItem) {
+                listItem.dataset.isCompleted = newStatus.toString();
+                if (newStatus) {
+                    listItem.classList.add('completed'); 
+                } else {
+                    listItem.classList.remove('completed');
+                }
+            }
         } catch (error) {
             console.error('Ошибка сети:', error);
             alert('Ошибка соединения с сервером');
@@ -598,18 +618,30 @@ document.addEventListener('DOMContentLoaded', () => {
                 const startParam = startDate.toISOString().split('T')[0];
                 const endParam = endDate.toISOString().split('T')[0];
                 
-                const response = await fetch(`/api/tasks/?start=${startParam}&end=${endParam}`);
+                const response = await fetch(`/api/calendar-tasks/?start=${startParam}&end=${endParam}`);
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
                 
                 const data = await response.json();
+                return data.map(task => {
+                    const rawStatus = task.isCompleted ?? task.is_completed ?? task.completed ?? task.status;
+                    let isCompletedBool = false;
 
-                return data.map(task => ({
-                    ...task,
-                    deadline: new Date(task.deadline),
-                    isCompleted: Boolean(task.isCompleted || task.is_completed || task.completed)
-                }));
+                    if (typeof rawStatus === 'string') {
+                        isCompletedBool = rawStatus.toLowerCase() === 'true' || rawStatus === '1';
+                    } else if (typeof rawStatus === 'number') {
+                        isCompletedBool = rawStatus === 1;
+                    } else {
+                        isCompletedBool = Boolean(rawStatus);
+                    }
+
+                    return {
+                        ...task,
+                        deadline: new Date(task.deadline),
+                        isCompleted: isCompletedBool
+                    };
+                });
                 
             } catch (error) {
                 console.error('Ошибка при загрузке задач:', error);

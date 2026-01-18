@@ -199,7 +199,6 @@ def create_group(request):
 @login_required
 def get_calendar_tasks(request):
     user = request.user
-    
     start_str = request.GET.get('start')
     end_str = request.GET.get('end')
     
@@ -238,6 +237,8 @@ def get_calendar_tasks(request):
             'isCompleted': ut.is_done,
             'isGroupTask': True if task.group else False
         })
+        
+    
     
     return JsonResponse(tasks_data, safe=False)
 
