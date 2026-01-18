@@ -143,7 +143,7 @@ def group_detail(request, group_id):
         'leaderboard': leaderboard,
     }
 
-    return render(request, 'group/home_logged.html', context)
+    return render(request, 'tasks/group_detail.html', context)
 
 @login_required
 def create_task(request):
